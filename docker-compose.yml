@@ -94,6 +94,8 @@ services:
       - scheduler
     volumes:
       - ./dags:/usr/local/airflow/dags
+    tmpfs:
+      - /opt/airflow/
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
