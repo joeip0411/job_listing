@@ -51,14 +51,14 @@ def job_listing_processing():
     """
 
     @task()
-    def get_job_listing(search_content:str) -> dict:
+    def get_job_listing(search_content:str) -> list:
         """Get data engineer job listing from Adzuna API
 
         Args:
             search_content (str): job title to search for
 
         Returns:
-            dict: all data engineer job listings
+            list: all data engineer job listings
         """
         adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
         job_listing = adzuna_hook.get_job_listings(job_title=search_content)
