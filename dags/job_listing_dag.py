@@ -5,7 +5,7 @@ import requests
 from airflow.decorators import dag, task
 from airflow.providers.http.hooks.http import HttpHook
 
-ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}"
+ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=50"
 
 class AdzunaHook(HttpHook):
     """Interacts with Adzuna job listing API
@@ -32,14 +32,22 @@ class AdzunaHook(HttpHook):
         Returns:
             dict: all job listings
         """
+        all_result = []
+        page_number = 1
 
-        endpoint = ADZUNA_SEARCH_ENDPOINT.format(page_number=1, 
-                                                 app_id=self.app_id, 
-                                                 app_key=self.app_key,
-                                                 search_content=job_title)
-        response = requests.get(endpoint)
-        result = json.loads(response.text)['results']
-        return result
+        while True:
+            endpoint = ADZUNA_SEARCH_ENDPOINT.format(page_number=page_number, 
+                                                    app_id=self.app_id, 
+                                                    app_key=self.app_key,
+                                                    search_content=job_title)
+            response = requests.get(endpoint)
+            result = json.loads(response.text)['results']
+            if len(result) > 0:
+                all_result += result
+                page_number += 1
+            else:
+                break
+        return all_result
     
 @dag(dag_id='job_listing_processing',
      start_date=pendulum.datetime(2024,4,8, tz='UTC'),
@@ -62,9 +70,12 @@ def job_listing_processing():
         """
         adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
         job_listing = adzuna_hook.get_job_listings(job_title=search_content)
+
+        with open('/opt/job_listing.json', 'w') as f:
+            json.dump(job_listing, f)
+
         return job_listing
     
     get_job_listing(search_content='data%20engineer')
 
 job_listing_processing()
-
