@@ -12,7 +12,7 @@ services:
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
     volumes:
-      - postgres_data_new:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - 5432:5432
 
@@ -31,7 +31,6 @@ services:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
-      - FERNET_KEY=${AIRFLOW_FERNET_KEY}
       - AIRFLOW_BASE_URL=http://localhost:8080
       - ENABLE_REMOTE_LOGGING=False
       - STAGE=dev
@@ -80,7 +79,6 @@ services:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
-      - FERNET_KEY=${AIRFLOW_FERNET_KEY}
       - AIRFLOW_BASE_URL=http://localhost:8080
       - ENABLE_REMOTE_LOGGING=False
       - STAGE=dev
@@ -94,6 +92,8 @@ services:
       - scheduler
     volumes:
       - ./dags:/usr/local/airflow/dags
+    tmpfs:
+      - /opt/airflow/
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -102,11 +102,10 @@ services:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
-      - FERNET_KEY=${AIRFLOW_FERNET_KEY}
       - AIRFLOW_BASE_URL=http://localhost:8080
       - ENABLE_REMOTE_LOGGING=False
       - STAGE=dev
     command: worker
 
 volumes:
-  postgres_data_new:
+  postgres_data:
