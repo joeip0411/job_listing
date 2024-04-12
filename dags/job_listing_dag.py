@@ -1,8 +1,12 @@
 import json
+import os
+import tempfile
+from datetime import datetime
 
 import pendulum
 import requests
 from airflow.decorators import dag, task
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.http.hooks.http import HttpHook
 
 ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=50"
@@ -47,6 +51,7 @@ class AdzunaHook(HttpHook):
                 page_number += 1
             else:
                 break
+
         return all_result
     
 @dag(dag_id='job_listing_processing',
@@ -71,11 +76,24 @@ def job_listing_processing():
         adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
         job_listing = adzuna_hook.get_job_listings(job_title=search_content)
 
-        with open('/opt/job_listing.json', 'w') as f:
+        file_name = 'jobs.json'
+        file_path = os.path.join(tempfile.gettempdir(), file_name)
+        with open(file_path, 'w') as f:
             json.dump(job_listing, f)
 
-        return job_listing
+
+        s3_hook = S3Hook(aws_conn_id='aws_custom')
+
+        bucket_name = 'joeip-data-engineering-job-listing'
+
+        key = datetime.utcnow().strftime('raw/%Y/%m/%d/')+ file_name
+        if s3_hook.check_for_key(key=key, bucket_name=bucket_name):
+            s3_hook.delete_objects(bucket=bucket_name, keys=key)
+        s3_hook.load_file(filename=file_path, key=key, bucket_name=bucket_name)
+
+        return key
     
     get_job_listing(search_content='data%20engineer')
 
 job_listing_processing()
+

@@ -41,7 +41,7 @@ case "$1" in
     ;;
   worker)
     sleep 15
-    exec airflow celery worker
+    exec airflow celery worker --pid=/opt/airflow/airflow-worker.pid
     ;;
   flower)
     sleep 15

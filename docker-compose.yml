@@ -36,7 +36,6 @@ services:
       - STAGE=dev
     volumes:
         - ./dags:/usr/local/airflow/dags
-        - ./output:/opt
     ports:
         - "8080:8080"
     command: webserver
@@ -72,7 +71,6 @@ services:
       - webserver
     volumes:
       - ./dags:/usr/local/airflow/dags
-      - ./output:/opt
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -94,7 +92,6 @@ services:
       - scheduler
     volumes:
       - ./dags:/usr/local/airflow/dags
-      - ./output:/opt
     tmpfs:
       - /opt/airflow/
     environment:
