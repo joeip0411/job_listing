@@ -13,7 +13,7 @@ from airflow.providers.http.hooks.http import HttpHook
 from bs4 import BeautifulSoup
 from openai import OpenAI
 
-ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=10"
+ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=50"
 BUCKET_NAME = 'joeip-data-engineering-job-listing'
 class AdzunaHook(HttpHook):
     """Interacts with Adzuna job listing API
@@ -53,7 +53,6 @@ class AdzunaHook(HttpHook):
             if len(result) > 0:
                 all_result += result
                 page_number += 1
-                break
             else:
                 break
 
