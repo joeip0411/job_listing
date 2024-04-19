@@ -1,21 +1,23 @@
-import io
 import json
-import os
-import tempfile
-from datetime import datetime
 
-import pandas as pd
 import pendulum
-import pyspark
 import requests
 from airflow.decorators import dag, task
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.http.hooks.http import HttpHook
 from bs4 import BeautifulSoup
 from openai import OpenAI
+from pyspark import SparkConf
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import current_timestamp
+from pyspark.sql.types import (
+    FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
 
-ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=5"
+ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=50"
 BUCKET_NAME = 'joeip-data-engineering-job-listing'
 class AdzunaHook(HttpHook):
     """Interacts with Adzuna job listing API
@@ -55,7 +57,6 @@ class AdzunaHook(HttpHook):
             if len(result) > 0:
                 all_result += result
                 page_number += 1
-                break
             else:
                 break
 
@@ -94,7 +95,7 @@ class ChatCompletionHook(HttpHook):
                 {"role": "user", "content": "Find all the cloud services and technology required for the job descripton provided"},
                 {"role": "user", "content": "If the technology / cloud service identified is not the official name of the product, return the official name"},
                 {"role": "user", "content": "Remove duplicates if there are any"},
-                {"role": "user", "content": "Return 'N/A' if none identified"},
+                {"role": "user", "content": "Return an empty string if none identified"},
                 {"role": "user", "content": "Return the result delimited by ' | '"},
                 {"role": "user", "content": "Job description: \n" + job_desc},
             ],
@@ -113,20 +114,20 @@ class ChatCompletionHook(HttpHook):
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API
     """
-    s3_hook = S3Hook(aws_conn_id='aws_custom')
 
     conf = (
-    pyspark.SparkConf()\
-        .setAppName('app_name')\
-        .set('spark.jars.packages', 'org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0,org.apache.iceberg:iceberg-aws-bundle:1.5.0')\
-        .set('spark.sql.extensions', 'org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions')\
-        .set('spark.sql.catalog.glue', 'org.apache.iceberg.spark.SparkCatalog')\
-        .set('spark.sql.catalog.glue.catalog-impl', 'org.apache.iceberg.aws.glue.GlueCatalog')\
-        .set('spark.sql.catalog.glue.warehouse', 's3://joeip-data-engineering-iceberg-test/')\
-        .set('spark.sqk.catalog.glue.io-impl', 'org.apache.iceberg.aws.s3.S3FileIO')
+        SparkConf()\
+            .setAppName('app_name')\
+            .set('spark.jars.packages', 'org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0,org.apache.iceberg:iceberg-aws-bundle:1.5.0')\
+            .set('spark.sql.extensions', 'org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions')\
+            .set('spark.sql.catalog.glue', 'org.apache.iceberg.spark.SparkCatalog')\
+            .set('spark.sql.catalog.glue.catalog-impl', 'org.apache.iceberg.aws.glue.GlueCatalog')\
+            .set('spark.sql.catalog.glue.warehouse', 's3://joeip-data-engineering-iceberg-test/')\
+            .set('spark.sqk.catalog.glue.io-impl', 'org.apache.iceberg.aws.s3.S3FileIO')
     )
 
-
+    catalog = 'glue'
+    database = 'job'
 
     @task()
     def get_job_listing(search_content:str) -> str:
@@ -136,46 +137,61 @@ def job_listing_processing():
             search_content (str): job title to search for
 
         Returns:
-            str: key of the blob in s3
+            str: output table name
         """
+        table_name = f'{catalog}.{database}.stg__job_listing'
+
         spark = SparkSession.builder.config(conf=conf).getOrCreate()
 
-        data = [("John", 30), ("Alice", 25), ("Bob", 35)]
-        df = spark.createDataFrame(data)
+        adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
+        job_listing = adzuna_hook.get_job_listings(job_title=search_content)
 
-        df.write.format('iceberg')\
+        schema = StructType([
+            StructField("description", StringType(), True),
+            StructField("id", StringType(), True),
+            StructField("location", StringType(), True),
+            StructField("redirect_url", StringType(), True),
+            StructField("salary_is_predicted", StringType(), True),
+            StructField("company", StringType(), True),
+            StructField("__CLASS__", StringType(), True),
+            StructField("adref", StringType(), True),
+            StructField("category", StringType(), True),
+            StructField("created", StringType(), True),
+            StructField("title", StringType(), True),
+            StructField("latitude", FloatType(), True),
+            StructField("salary_min", IntegerType(), True),
+            StructField("longitude", FloatType(), True),
+            StructField("contract_time", StringType(), True),
+            StructField("salary_max", IntegerType(), True),
+            StructField("contract_type", StringType(), True),
+        ])
+
+        job_listing_df = spark.createDataFrame(job_listing, schema=schema)
+        job_listing_df = job_listing_df.withColumn('extraction_time_utc', current_timestamp())
+
+        job_listing_df.write.format('iceberg')\
             .mode('overwrite')\
-            .saveAsTable('glue.test.person1')
+            .saveAsTable(table_name)
 
-
-        # adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
-        # job_listing = adzuna_hook.get_job_listings(job_title=search_content)
-
-        # job_listing_df = pd.DataFrame(job_listing).astype('string')
-
-        # job_listing_sdf = spark.createDataFrame(job_listing_df)
-
-        # job_listing_sdf.write.format('iceberg')\
-        #     .mode('overwrite')\
-        #     .saveAsTable('glue.test.job_listing')
-
-        # file_name = 'job_listings'
-        # file_extension = '.parquet'
-        # key = datetime.utcnow().strftime(f'raw/{file_name}/%Y/%m/%d/%Y-%m-%d'+file_extension)
-        # _load_obj_to_s3(file_name = file_name, key = key, obj=job_listing_df)
-
-        return True
+        return table_name
     
     @task()
-    def get_job_descriptions(key:str)-> str:
+    def get_job_descriptions(input_table:str)-> str:
         """Get job description for each job
 
         Returns:
-            str: key of the blob in s3
+            str: output table name
         """
-        jobs = pd.read_parquet(_get_obj_from_s3(key=key)) 
+
+        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+
+        sdf = spark.sql(f"""
+                select
+                    split(redirect_url, '\\\?')[0] as redirect_url
+                from {input_table};
+            """)
         
-        urls = jobs['redirect_url'].str.split('?').str[0]
+        urls = [str(row.redirect_url) for row in sdf.collect()]
 
         job_descriptions = []
 
@@ -188,56 +204,67 @@ def job_listing_processing():
                 job_desc = ''
             
             job = {'id':url.split('/')[-1], 
-                   'desc':job_desc}
+                   'full_description':job_desc}
 
             job_descriptions.append(job)
         
-        job_descriptions_df = pd.DataFrame(job_descriptions).astype('string')
+        schema = StructType([
+            StructField("id", StringType(), True),
+            StructField("full_description", StringType(), True),
 
-        file_name = 'job_descriptions'
-        file_extension = '.parquet'
-        output_key = datetime.utcnow().strftime(f'raw/{file_name}/%Y/%m/%d/%Y-%m-%d'+file_extension)
-        _load_obj_to_s3(file_name = file_name, key = output_key, obj=job_descriptions_df)
+        ])
 
-        return output_key
+        job_desc_df = spark.createDataFrame(job_descriptions, schema=schema)
+        job_desc_df = job_desc_df.withColumn('extraction_time_utc', current_timestamp())
 
-    def _load_obj_to_s3(file_name:str, key:str, obj:object) -> str:
+        table_name = f'{catalog}.{database}.stg__job_description'
+        job_desc_df.write.format('iceberg')\
+            .mode('overwrite')\
+            .saveAsTable(table_name)
 
-        file_path = os.path.join(tempfile.gettempdir(), file_name)
-        obj.to_parquet(path=file_path)
+        return table_name
 
-        if s3_hook.check_for_key(key=key, bucket_name=BUCKET_NAME):
-            s3_hook.delete_objects(bucket=BUCKET_NAME, keys=key)
-        s3_hook.load_file(filename=file_path, key=key, bucket_name=BUCKET_NAME)
-
-    def _get_obj_from_s3(key:str):
-        s3_obj = s3_hook.get_key(key=key,bucket_name=BUCKET_NAME)
-        obj = io.BytesIO(s3_obj.get()['Body'].read())
-        return obj
-    
     @task
-    def get_technologies_from_job_description(key:str):
-        job_desc = pd.read_parquet(_get_obj_from_s3(key=key)) 
+    def get_technologies_from_job_description(input_table:str) -> str:
+        """Get technology/skills required for each job
+
+        Returns:
+            str: output table name
+        """
+        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+
+        job_description = spark.sql(
+            f"""
+                select
+                    id,
+                    full_description
+                from {input_table}
+            """)
+
+        desc = [((row.id, row.full_description)) for row in job_description.collect()]
 
         technologies = []
         chat_completion_hook = ChatCompletionHook(conn_id='openai_conn')
 
-        for i in range(len(job_desc)):
-            technology = chat_completion_hook.get_technologies_from_job_desc(job_desc=job_desc.iloc[i,1])
+        for i in range(len(desc)):
+            technology = chat_completion_hook.get_technologies_from_job_desc(job_desc=desc[i][1])
             technologies.append(technology)
 
-        job_desc['technology'] = technologies
+        job_skills = [(desc[i][0], technologies[i]) for i in range(len(desc))]
+        columns = ['id', 'skill']
 
-        file_name = 'job_descriptions_with_skill'
-        file_extension = '.parquet'
-        output_key = datetime.utcnow().strftime(f'raw/{file_name}/%Y/%m/%d/%Y-%m-%d'+file_extension)
-        _load_obj_to_s3(file_name=file_name, key=output_key, obj=job_desc)
+        job_skills = spark.createDataFrame(job_skills, columns)
+        job_skills = job_skills.withColumn('extraction_time_utc', current_timestamp())
 
-        return output_key
+        table_name = f'{catalog}.{database}.stg__job_skills'
+        job_skills.write.format('iceberg')\
+            .mode('overwrite')\
+            .saveAsTable(table_name)
 
+        return table_name
 
     job_listings = get_job_listing(search_content='data%20engineer')
-    # job_descriptions = get_job_descriptions(job_listings)
-    # get_technologies_from_job_description(job_descriptions)
+    job_descriptions = get_job_descriptions(job_listings)
+    get_technologies_from_job_description(job_descriptions)
 
 job_listing_processing()

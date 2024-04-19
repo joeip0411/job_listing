@@ -1,47 +1,6 @@
 import time
 
 import boto3
-import pyspark
-from pyspark.sql import SparkSession
-
-# pyspark==3.4.1
-# "glue" below can be anything
-conf = (
-    pyspark.SparkConf()\
-    .setAppName('app_name')\
-    .set('spark.jars.packages', 'org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0,org.apache.iceberg:iceberg-aws-bundle:1.5.0')\
-    .set('spark.sql.extensions', 'org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions')\
-    .set('spark.sql.catalog.glue', 'org.apache.iceberg.spark.SparkCatalog')\
-    .set('spark.sql.catalog.glue.catalog-impl', 'org.apache.iceberg.aws.glue.GlueCatalog')\
-    .set('spark.sql.catalog.glue.warehouse', 's3://joeip-data-engineering-iceberg-test/')\
-    .set('spark.sqk.catalog.glue.io-impl', 'org.apache.iceberg.aws.s3.S3FileIO')
-)
-
-spark = SparkSession.builder.config(conf=conf).getOrCreate()
-
-spark.sql(
-    """create database glue.test
-    """,
-)
-
-spark.sql(
-    """
-    create table if not exists glue.test.sales
-    (id string, name string, product string, price string, date string) using iceberg
-    """,
-)
-
-data = [("John", 30), ("Alice", 25), ("Bob", 35)]
-df = spark.createDataFrame(data)
-
-df.write.format('iceberg')\
-    .mode('overwrite')\
-    .saveAsTable('glue.test.person')
-
-spark.sql("select * from glue.test.person").show()
-
-##############################
-#EMR
 
 session = boto3.Session(
     aws_access_key_id="",
