@@ -6,14 +6,16 @@ from datetime import datetime
 
 import pandas as pd
 import pendulum
+import pyspark
 import requests
 from airflow.decorators import dag, task
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.http.hooks.http import HttpHook
 from bs4 import BeautifulSoup
 from openai import OpenAI
+from pyspark.sql import SparkSession
 
-ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=50"
+ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=5"
 BUCKET_NAME = 'joeip-data-engineering-job-listing'
 class AdzunaHook(HttpHook):
     """Interacts with Adzuna job listing API
@@ -53,6 +55,7 @@ class AdzunaHook(HttpHook):
             if len(result) > 0:
                 all_result += result
                 page_number += 1
+                break
             else:
                 break
 
@@ -112,6 +115,19 @@ def job_listing_processing():
     """
     s3_hook = S3Hook(aws_conn_id='aws_custom')
 
+    conf = (
+    pyspark.SparkConf()\
+        .setAppName('app_name')\
+        .set('spark.jars.packages', 'org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0,org.apache.iceberg:iceberg-aws-bundle:1.5.0')\
+        .set('spark.sql.extensions', 'org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions')\
+        .set('spark.sql.catalog.glue', 'org.apache.iceberg.spark.SparkCatalog')\
+        .set('spark.sql.catalog.glue.catalog-impl', 'org.apache.iceberg.aws.glue.GlueCatalog')\
+        .set('spark.sql.catalog.glue.warehouse', 's3://joeip-data-engineering-iceberg-test/')\
+        .set('spark.sqk.catalog.glue.io-impl', 'org.apache.iceberg.aws.s3.S3FileIO')
+    )
+
+
+
     @task()
     def get_job_listing(search_content:str) -> str:
         """Get data engineer job listing from Adzuna API
@@ -122,16 +138,33 @@ def job_listing_processing():
         Returns:
             str: key of the blob in s3
         """
-        adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
-        job_listing = adzuna_hook.get_job_listings(job_title=search_content)
+        spark = SparkSession.builder.config(conf=conf).getOrCreate()
 
-        job_listing_df = pd.DataFrame(job_listing).astype('string')
+        data = [("John", 30), ("Alice", 25), ("Bob", 35)]
+        df = spark.createDataFrame(data)
 
-        file_name = 'job_listings.parquet'
-        key = datetime.utcnow().strftime('raw/%Y/%m/%d/')+ file_name
-        _load_obj_to_s3(file_name = file_name, key = key, obj=job_listing_df)
+        df.write.format('iceberg')\
+            .mode('overwrite')\
+            .saveAsTable('glue.test.person1')
 
-        return key
+
+        # adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
+        # job_listing = adzuna_hook.get_job_listings(job_title=search_content)
+
+        # job_listing_df = pd.DataFrame(job_listing).astype('string')
+
+        # job_listing_sdf = spark.createDataFrame(job_listing_df)
+
+        # job_listing_sdf.write.format('iceberg')\
+        #     .mode('overwrite')\
+        #     .saveAsTable('glue.test.job_listing')
+
+        # file_name = 'job_listings'
+        # file_extension = '.parquet'
+        # key = datetime.utcnow().strftime(f'raw/{file_name}/%Y/%m/%d/%Y-%m-%d'+file_extension)
+        # _load_obj_to_s3(file_name = file_name, key = key, obj=job_listing_df)
+
+        return True
     
     @task()
     def get_job_descriptions(key:str)-> str:
@@ -161,8 +194,9 @@ def job_listing_processing():
         
         job_descriptions_df = pd.DataFrame(job_descriptions).astype('string')
 
-        file_name = 'job_descriptions.parquet'
-        output_key = datetime.utcnow().strftime('raw/%Y/%m/%d/')+ file_name
+        file_name = 'job_descriptions'
+        file_extension = '.parquet'
+        output_key = datetime.utcnow().strftime(f'raw/{file_name}/%Y/%m/%d/%Y-%m-%d'+file_extension)
         _load_obj_to_s3(file_name = file_name, key = output_key, obj=job_descriptions_df)
 
         return output_key
@@ -171,8 +205,6 @@ def job_listing_processing():
 
         file_path = os.path.join(tempfile.gettempdir(), file_name)
         obj.to_parquet(path=file_path)
-
-        key = datetime.utcnow().strftime('raw/%Y/%m/%d/')+ file_name
 
         if s3_hook.check_for_key(key=key, bucket_name=BUCKET_NAME):
             s3_hook.delete_objects(bucket=BUCKET_NAME, keys=key)
@@ -196,16 +228,16 @@ def job_listing_processing():
 
         job_desc['technology'] = technologies
 
-        file_name = 'job_descriptions_with_skill.parquet'
-        output_key = datetime.utcnow().strftime('raw/%Y/%m/%d/')+ file_name
+        file_name = 'job_descriptions_with_skill'
+        file_extension = '.parquet'
+        output_key = datetime.utcnow().strftime(f'raw/{file_name}/%Y/%m/%d/%Y-%m-%d'+file_extension)
         _load_obj_to_s3(file_name=file_name, key=output_key, obj=job_desc)
 
         return output_key
 
 
     job_listings = get_job_listing(search_content='data%20engineer')
-    job_descriptions = get_job_descriptions(job_listings)
-    get_technologies_from_job_description(job_descriptions)
-
+    # job_descriptions = get_job_descriptions(job_listings)
+    # get_technologies_from_job_description(job_descriptions)
 
 job_listing_processing()

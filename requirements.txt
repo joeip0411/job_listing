@@ -7,3 +7,4 @@ click
 apache-airflow-providers-amazon
 flower
 openai==1.17.1
+pyspark
