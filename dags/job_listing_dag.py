@@ -93,7 +93,7 @@ class ChatCompletionHook(HttpHook):
             messages = [
                 {"role": "system", "content": "You are a helpful technology assistant who is aware of all cloud services and technology used for software development and data processing"},
                 {"role": "user", "content": "Find all the cloud services and technology required for the job descripton provided"},
-                {"role": "user", "content": "If the technology / cloud service identified is not the official name of the product, return the official name"},
+                # {"role": "user", "content": "If the technology / cloud service identified is not the official name of the product, return the official name"},
                 {"role": "user", "content": "Remove duplicates if there are any"},
                 {"role": "user", "content": "Return an empty string if none identified"},
                 {"role": "user", "content": "Return the result delimited by ' | '"},

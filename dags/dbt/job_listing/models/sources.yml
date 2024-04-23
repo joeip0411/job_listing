@@ -1,0 +1,7 @@
+sources:
+  - name: job
+    tables:
+      - name: stg__job_listing
+      - name: stg__job_description
+      - name: stg__job_skills
+

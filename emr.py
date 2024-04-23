@@ -1,10 +1,11 @@
+import os
 import time
 
 import boto3
 
 session = boto3.Session(
-    aws_access_key_id="",
-    aws_secret_access_key="",
+    aws_access_key_id=os.getenv('airflow_aws_access_key_id'),
+    aws_secret_access_key=os.getenv('airflow_aws_secret_access_key'),
     region_name='ap-southeast-2',
 )
 
@@ -24,13 +25,6 @@ response = emr_client.run_job_flow(
                 'InstanceCount': 1,
                 'Market': 'SPOT',
             },
-            {
-                'Name': 'core',
-                'InstanceRole': 'CORE',
-                'InstanceType': 'm5.xlarge',
-                'InstanceCount': 1,
-                'Market': 'SPOT',
-            }
         ],
 
         "EmrManagedMasterSecurityGroup": 'sg-0cb660a18340f7dd3',
@@ -83,11 +77,11 @@ response = emr_client.run_job_flow(
         {
             "Classification": "spark-defaults",
             "Properties": {
+                "spark.sql.defaultCatalog": "glue",
                 "spark.sqk.catalog.glue.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
                 "spark.sql.catalog.glue": "org.apache.iceberg.spark.SparkCatalog",
                 "spark.sql.catalog.glue.catalog-impl": "org.apache.iceberg.aws.glue.GlueCatalog",
                 "spark.sql.catalog.glue.warehouse": "s3://joeip-data-engineering-iceberg-test/",
-                "spark.sql.defaultCatalog": "glue",
                 "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
             },
         },
@@ -97,7 +91,7 @@ response = emr_client.run_job_flow(
 cluster_id = response['JobFlowId']
 
 cluster_details = emr_client.describe_cluster(ClusterId=cluster_id)
-cluster_status = response['Cluster']['Status']['State']
+cluster_status = cluster_details['Cluster']['Status']['State']
 
 while True:
     response = emr_client.describe_cluster(ClusterId=cluster_id)
@@ -107,8 +101,9 @@ while True:
         time.sleep(60)
     elif cluster_status == 'WAITING':
         break
-    elif cluster_status == 'TERMINATED':
+    else:
         raise RuntimeError
     
 cluster_details = emr_client.describe_cluster(ClusterId = cluster_id)
 host_name = cluster_details['Cluster']['MasterPublicDnsName']
+
