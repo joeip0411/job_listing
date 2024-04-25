@@ -1,12 +1,23 @@
-import json
+import logging
+import time
+from pathlib import Path
 
 import pendulum
 import requests
+from airflow import settings
 from airflow.decorators import dag, task
-from airflow.providers.http.hooks.http import HttpHook
+from airflow.models import Connection
+from airflow.providers.amazon.aws.hooks.emr import EmrHook
 from bs4 import BeautifulSoup
-from openai import OpenAI
-from pyspark import SparkConf
+from cosmos import DbtTaskGroup, ExecutionConfig, ProfileConfig, ProjectConfig, RenderConfig
+from cosmos.profiles import SparkThriftProfileMapping
+from include.constants import (
+    EMR_JOB_FLOW_OVERRIDES,
+    GLUE_CATALOG,
+    GLUE_DATABASE,
+    SPARK_CONF,
+)
+from include.hooks import AdzunaHook, ChatCompletionHook
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import (
@@ -17,117 +28,20 @@ from pyspark.sql.types import (
     StructType,
 )
 
-ADZUNA_SEARCH_ENDPOINT = "https://api.adzuna.com/v1/api/jobs/au/search/{page_number}?app_id={app_id}&app_key={app_key}&what={search_content}&results_per_page=50"
-BUCKET_NAME = 'joeip-data-engineering-job-listing'
-class AdzunaHook(HttpHook):
-    """Interacts with Adzuna job listing API
-    application id and secret in "adzuna_conn"
-    """
+DBT_ROOT_PATH = Path(__file__).parent / "dbt"
 
-    def __init__(self, conn_id:str):
-        """Adzuna API Wrapper Hook
-
-        Args:
-            conn_id (str): Airflow connection id to obtain application name and key
-        """
-        self.conn_id = conn_id
-        self.connection = self.get_connection(self.conn_id)
-        self.app_id = self.connection.extra_dejson.get('application_id')
-        self.app_key = self.connection.extra_dejson.get('application_password')
-
-    def get_job_listings(self, job_title:str) -> dict:
-        """Get all job listing of a job title
-
-        Args:
-            job_title (str): job title to search
-
-        Returns:
-            dict: all job listings
-        """
-        all_result = []
-        page_number = 1
-
-        while True:
-            endpoint = ADZUNA_SEARCH_ENDPOINT.format(page_number=page_number, 
-                                                    app_id=self.app_id, 
-                                                    app_key=self.app_key,
-                                                    search_content=job_title)
-            response = requests.get(endpoint)
-            result = json.loads(response.text)['results']
-            if len(result) > 0:
-                all_result += result
-                page_number += 1
-            else:
-                break
-
-        return all_result
-
-class ChatCompletionHook(HttpHook):
-    """Interacts with OpenAI Chat Completion API
-    api secret in "openai_conn"
-    """
-        
-    def __init__(self, conn_id:str):
-        """Open AI Chat Completion Hook
-
-        Args:
-            conn_id (str): Airflow connection id to obtain api secret
-        """
-        self.conn_id = conn_id
-        self.connection = self.get_connection(self.conn_id)
-        self.api_key = self.connection.password
-
-    def get_technologies_from_job_desc(self, job_desc:str) -> str:
-        """Extract technologies required from job description
-
-        Args:
-            job_desc (str): job description
-
-        Returns:
-            str: technologies delimited by " | "
-        """
-        client = OpenAI(api_key=self.api_key)
-
-        response = client.chat.completions.create(
-            model='gpt-3.5-turbo',
-            messages = [
-                {"role": "system", "content": "You are a helpful technology assistant who is aware of all cloud services and technology used for software development and data processing"},
-                {"role": "user", "content": "Find all the cloud services and technology required for the job descripton provided"},
-                # {"role": "user", "content": "If the technology / cloud service identified is not the official name of the product, return the official name"},
-                {"role": "user", "content": "Remove duplicates if there are any"},
-                {"role": "user", "content": "Return an empty string if none identified"},
-                {"role": "user", "content": "Return the result delimited by ' | '"},
-                {"role": "user", "content": "Job description: \n" + job_desc},
-            ],
-            temperature=0.2,
-
-        )
-        content = response.choices[0].message.content
-        return content
-
-    
 @dag(dag_id='job_listing_processing',
      start_date=pendulum.datetime(2024,4,8, tz='UTC'),
-     schedule_interval='0 2 * * *',
+     schedule_interval=None,
      catchup=False,
      owner_links={'admin':'https://airflow.apache.org'})
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API
     """
 
-    conf = (
-        SparkConf()\
-            .setAppName('app_name')\
-            .set('spark.jars.packages', 'org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0,org.apache.iceberg:iceberg-aws-bundle:1.5.0')\
-            .set('spark.sql.extensions', 'org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions')\
-            .set('spark.sql.catalog.glue', 'org.apache.iceberg.spark.SparkCatalog')\
-            .set('spark.sql.catalog.glue.catalog-impl', 'org.apache.iceberg.aws.glue.GlueCatalog')\
-            .set('spark.sql.catalog.glue.warehouse', 's3://joeip-data-engineering-iceberg-test/')\
-            .set('spark.sqk.catalog.glue.io-impl', 'org.apache.iceberg.aws.s3.S3FileIO')
-    )
-
-    catalog = 'glue'
-    database = 'job'
+    conf = SPARK_CONF
+    catalog = GLUE_CATALOG
+    database = GLUE_DATABASE
 
     @task()
     def get_job_listing(search_content:str) -> str:
@@ -225,7 +139,7 @@ def job_listing_processing():
         return table_name
 
     @task
-    def get_technologies_from_job_description(input_table:str) -> str:
+    def get_skills_from_job_description(input_table:str) -> str:
         """Get technology/skills required for each job
 
         Returns:
@@ -262,9 +176,101 @@ def job_listing_processing():
             .saveAsTable(table_name)
 
         return table_name
+    
+    @task
+    def start_emr_cluster():
+        emr_hook = EmrHook(aws_conn_id='aws_custom')
+        emr_client = emr_hook.get_conn()
+
+        response = emr_client.run_job_flow(
+            Name=EMR_JOB_FLOW_OVERRIDES['Name'],
+            LogUri=EMR_JOB_FLOW_OVERRIDES['LogUri'],
+            ReleaseLabel=EMR_JOB_FLOW_OVERRIDES['ReleaseLabel'],
+            Instances=EMR_JOB_FLOW_OVERRIDES['Instances'],
+            Steps=EMR_JOB_FLOW_OVERRIDES['Steps'],
+            ServiceRole=EMR_JOB_FLOW_OVERRIDES['ServiceRole'],
+            JobFlowRole=EMR_JOB_FLOW_OVERRIDES['JobFlowRole'],
+            Applications=EMR_JOB_FLOW_OVERRIDES['Applications'],
+            Configurations=EMR_JOB_FLOW_OVERRIDES['Configurations'],
+        )
+        logging.info(response)
+
+        cluster_id = response['JobFlowId']
+        
+        while True:
+            response = emr_client.describe_cluster(ClusterId=cluster_id)
+            cluster_status = response['Cluster']['Status']['State']
+
+            logging.info('cluster status:', cluster_status)
+
+            if cluster_status == 'STARTING':
+                time.sleep(60)
+            elif cluster_status == 'WAITING':
+                break
+            else:
+                raise RuntimeError
+        
+        master_public_dns = response['Cluster']['MasterPublicDnsName']
+        return master_public_dns
+    
+    @task
+    def upsert_dbt_conn(master_public_dns:str):
+        """update host of dbt conn to connect to EMR cluster
+
+        Args:
+            master_public_dns (str): primary node public DNS
+        """
+        conn = Connection(
+            conn_id='dbt_conn',
+            conn_type='generic',
+            host=master_public_dns,
+            login='hadoop',
+            port=10001,
+        )
+        session = settings.Session()
+        existing_conn = session.query(Connection).filter(Connection.conn_id == conn.conn_id).first()
+
+        if str(existing_conn) == str(conn.conn_id):
+            session.delete(existing_conn)
+            session.commit()
+            logging.info('Existing dbt connection deleted')
+
+        session.add(conn)
+        session.commit()
+        logging.info('New dbt connection added')
+
+        return conn
+    
+    project_config = ProjectConfig(dbt_project_path= DBT_ROOT_PATH / "job_listing")
+
+    profile_config=ProfileConfig(
+        profile_name="default",
+        target_name="dev",
+        profile_mapping=SparkThriftProfileMapping(
+            conn_id="dbt_conn",
+            profile_args={"user": "hadoop"},
+        ),
+    )
+    execution_config=ExecutionConfig(
+        dbt_executable_path="/usr/local/airflow/dbt_venv/bin/dbt",
+    )
+
+    dbt_task_group = DbtTaskGroup(
+        group_id="job_listing_transformation",
+        project_config=project_config,
+        profile_config=profile_config,
+        execution_config=execution_config,
+        operator_args={
+            "install_deps": True,
+        }
+
+    )
 
     job_listings = get_job_listing(search_content='data%20engineer')
     job_descriptions = get_job_descriptions(job_listings)
-    get_technologies_from_job_description(job_descriptions)
+    job_skills = get_skills_from_job_description(job_descriptions)
+    primary_node_dns = start_emr_cluster()
+
+    job_listings >> job_descriptions >> job_skills >> primary_node_dns >> upsert_dbt_conn(primary_node_dns) >> dbt_task_group
 
 job_listing_processing()
