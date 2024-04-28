@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 import pendulum
@@ -30,12 +31,21 @@ from pyspark.sql.types import (
     StructType,
 )
 
+default_args = {
+    'owner': 'engineering',
+    'email': 'some_email@gmail.com',
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'start_date': pendulum.datetime(2024,4,8, tz='UTC'),
+}
 
-@dag(dag_id='job_listing_processing',
-     start_date=pendulum.datetime(2024,4,8, tz='UTC'),
+@dag(dag_id=os.path.basename(__file__).replace(".pyc", "").replace(".py", ""),
      schedule=None,
      catchup=False,
-     owner_links={'admin':'https://airflow.apache.org'})
+     owner_links={'admin':'https://airflow.apache.org'},
+     tags=['ELT'],
+     default_args=default_args,
+     )
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API
     """
