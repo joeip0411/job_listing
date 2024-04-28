@@ -1,8 +1,13 @@
+from pathlib import Path
+
+from cosmos import ExecutionConfig, ProfileConfig, ProjectConfig, RenderConfig
+from cosmos.constants import TestBehavior
+from cosmos.profiles import SparkThriftProfileMapping
 from pyspark import SparkConf
 
 SPARK_CONF=(
     SparkConf()\
-        .setAppName("app_name")\
+        .setAppName("spark_app")\
         .set("spark.jars.packages", "org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0,org.apache.iceberg:iceberg-aws-bundle:1.5.0")\
         .set("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")\
         .set("spark.sql.catalog.glue", "org.apache.iceberg.spark.SparkCatalog")\
@@ -88,3 +93,24 @@ EMR_JOB_FLOW_OVERRIDES = {
         },
     ],
 }
+
+DBT_PROJECT_NAME = "job_listing"
+DBT_ROOT_PATH = Path(__file__).parent.parent / "dbt"
+DBT_PROJECT_CONFIG = ProjectConfig(dbt_project_path= DBT_ROOT_PATH / DBT_PROJECT_NAME)
+DBT_PROFILE_CONFIG = ProfileConfig(
+    profile_name="default",
+    target_name="dev",
+    profile_mapping=SparkThriftProfileMapping(
+        conn_id="dbt_conn",
+        profile_args={"user": "hadoop",
+                        "schema": "job"},
+    ),
+)
+DBT_EXECUTION_CONFIG=ExecutionConfig(
+        dbt_executable_path="/usr/local/airflow/dbt_venv/bin/dbt",
+    )
+
+DBT_RENDER_CONFIG=RenderConfig(
+    test_behavior=TestBehavior.AFTER_ALL,
+    select=[DBT_PROJECT_NAME],
+)

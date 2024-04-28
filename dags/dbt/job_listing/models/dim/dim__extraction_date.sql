@@ -1,7 +1,6 @@
 {{ config(
     materialized='table',
-    file_format='iceberg',
-    enabled=false
+    file_format='iceberg'
 ) }}
 
 with cte as (

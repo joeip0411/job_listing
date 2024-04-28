@@ -1,6 +1,5 @@
 import logging
 import time
-from pathlib import Path
 
 import pendulum
 import requests
@@ -9,9 +8,12 @@ from airflow.decorators import dag, task
 from airflow.models import Connection
 from airflow.providers.amazon.aws.hooks.emr import EmrHook
 from bs4 import BeautifulSoup
-from cosmos import DbtTaskGroup, ExecutionConfig, ProfileConfig, ProjectConfig, RenderConfig
-from cosmos.profiles import SparkThriftProfileMapping
+from cosmos import DbtTaskGroup
 from include.constants import (
+    DBT_EXECUTION_CONFIG,
+    DBT_PROFILE_CONFIG,
+    DBT_PROJECT_CONFIG,
+    DBT_RENDER_CONFIG,
     EMR_JOB_FLOW_OVERRIDES,
     GLUE_CATALOG,
     GLUE_DATABASE,
@@ -28,11 +30,10 @@ from pyspark.sql.types import (
     StructType,
 )
 
-DBT_ROOT_PATH = Path(__file__).parent / "dbt"
 
 @dag(dag_id='job_listing_processing',
      start_date=pendulum.datetime(2024,4,8, tz='UTC'),
-     schedule_interval=None,
+     schedule=None,
      catchup=False,
      owner_links={'admin':'https://airflow.apache.org'})
 def job_listing_processing():
@@ -90,7 +91,7 @@ def job_listing_processing():
         return table_name
     
     @task()
-    def get_job_descriptions(input_table:str)-> str:
+    def get_job_descriptions_from_listing(input_table:str)-> str:
         """Get job description for each job
 
         Returns:
@@ -102,7 +103,8 @@ def job_listing_processing():
         sdf = spark.sql(f"""
                 select
                     split(redirect_url, '\\\?')[0] as redirect_url
-                from {input_table};
+                from {input_table}
+                where id not in (select id from {catalog}.{database}.brz__job_description);
             """)
         
         urls = [str(row.redirect_url) for row in sdf.collect()]
@@ -177,7 +179,7 @@ def job_listing_processing():
 
         return table_name
     
-    @task
+    @task(multiple_outputs=True)
     def start_emr_cluster():
         emr_hook = EmrHook(aws_conn_id='aws_custom')
         emr_client = emr_hook.get_conn()
@@ -201,9 +203,7 @@ def job_listing_processing():
             response = emr_client.describe_cluster(ClusterId=cluster_id)
             cluster_status = response['Cluster']['Status']['State']
 
-            logging.info('cluster status:', cluster_status)
-
-            if cluster_status == 'STARTING':
+            if cluster_status == 'STARTING' or cluster_status == 'RUNNING':
                 time.sleep(60)
             elif cluster_status == 'WAITING':
                 break
@@ -211,7 +211,8 @@ def job_listing_processing():
                 raise RuntimeError
         
         master_public_dns = response['Cluster']['MasterPublicDnsName']
-        return master_public_dns
+
+        return {"cluster_id":cluster_id, "master_public_dns":master_public_dns}
     
     @task
     def upsert_dbt_conn(master_public_dns:str):
@@ -220,6 +221,7 @@ def job_listing_processing():
         Args:
             master_public_dns (str): primary node public DNS
         """
+
         conn = Connection(
             conn_id='dbt_conn',
             conn_type='generic',
@@ -240,37 +242,37 @@ def job_listing_processing():
         logging.info('New dbt connection added')
 
         return conn
-    
-    project_config = ProjectConfig(dbt_project_path= DBT_ROOT_PATH / "job_listing")
-
-    profile_config=ProfileConfig(
-        profile_name="default",
-        target_name="dev",
-        profile_mapping=SparkThriftProfileMapping(
-            conn_id="dbt_conn",
-            profile_args={"user": "hadoop"},
-        ),
-    )
-    execution_config=ExecutionConfig(
-        dbt_executable_path="/usr/local/airflow/dbt_venv/bin/dbt",
-    )
 
     dbt_task_group = DbtTaskGroup(
         group_id="job_listing_transformation",
-        project_config=project_config,
-        profile_config=profile_config,
-        execution_config=execution_config,
+        project_config=DBT_PROJECT_CONFIG,
+        profile_config=DBT_PROFILE_CONFIG,
+        execution_config=DBT_EXECUTION_CONFIG,
+        render_config=DBT_RENDER_CONFIG,
         operator_args={
             "install_deps": True,
-        }
+        },
 
     )
 
+    @task
+    def terminate_emr_cluster(cluster_id:str):
+        emr_hook = EmrHook(aws_conn_id='aws_custom')
+        emr_client = emr_hook.get_conn()
+
+        response = emr_client.terminate_job_flows(
+            JobFlowIds=[
+                cluster_id,
+            ],
+        )
+        return response
+
+
     job_listings = get_job_listing(search_content='data%20engineer')
-    job_descriptions = get_job_descriptions(job_listings)
+    job_descriptions = get_job_descriptions_from_listing(job_listings)
     job_skills = get_skills_from_job_description(job_descriptions)
-    primary_node_dns = start_emr_cluster()
+    emr_details = start_emr_cluster()
 
-    job_listings >> job_descriptions >> job_skills >> primary_node_dns >> upsert_dbt_conn(primary_node_dns) >> dbt_task_group
-
+    job_listings >> job_descriptions >> job_skills >> emr_details 
+    emr_details >> upsert_dbt_conn(master_public_dns=emr_details['master_public_dns']) >> dbt_task_group >> terminate_emr_cluster(cluster_id=emr_details['cluster_id'])
 job_listing_processing()

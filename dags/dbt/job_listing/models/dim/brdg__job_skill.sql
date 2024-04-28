@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    incremental_strategy='append',
+    incremental_strategy='merge',
     file_format='iceberg',
     unqiue_key=['job_key', 'skill_key']
 ) }}

@@ -8,4 +8,4 @@
 select
     id,
     full_description as job_description
-from {{ source('job', 'stg__job_description') }}
+from {{ ref('brz__job_description')}}
