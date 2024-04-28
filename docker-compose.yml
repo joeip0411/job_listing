@@ -18,19 +18,14 @@ services:
 
   webserver:
     image: airflow:latest
+    env_file:
+      - .env
     restart: always
     build: .
     depends_on:
       - postgres
       - redis
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
       - AIRFLOW_BASE_URL=http://localhost:8080
       - ENABLE_REMOTE_LOGGING=False
       - STAGE=dev
@@ -47,18 +42,13 @@ services:
 
   flower:
     image: airflow:latest
+    env_file:
+      - .env
     restart: always
     depends_on:
       - redis
       - webserver
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
       - STAGE=dev
     ports:
       - "5555:5555"
@@ -66,19 +56,14 @@ services:
 
   scheduler:
     image: airflow:latest
+    env_file:
+      - .env
     restart: always
     depends_on:
       - webserver
     volumes:
       - ./dags:/usr/local/airflow/dags
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
       - AIRFLOW_BASE_URL=http://localhost:8080
       - ENABLE_REMOTE_LOGGING=False
       - STAGE=dev
@@ -86,6 +71,8 @@ services:
 
   worker:
     image: airflow:latest
+    env_file:
+      - .env
     restart: always
     depends_on:
       - webserver
@@ -95,13 +82,6 @@ services:
     tmpfs:
       - /opt/airflow/
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
       - AIRFLOW_BASE_URL=http://localhost:8080
       - ENABLE_REMOTE_LOGGING=False
       - STAGE=dev

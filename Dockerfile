@@ -1,7 +1,8 @@
 # BUILD: docker build --rm -t airflow .
 # ORIGINAL SOURCE: https://github.com/puckel/docker-airflow
 
-FROM python:3.7-slim
+# FROM python:3.7-slim
+FROM ubuntu:22.04
 LABEL version="1.0"
 LABEL maintainer="joeip"
 
@@ -32,6 +33,10 @@ ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
+ENV TZ=UTC
+
+RUN mkdir -p /usr/share/man/man1/
+
 RUN set -ex \
     && buildDeps=' \
         python3-dev \
@@ -59,6 +64,8 @@ RUN set -ex \
         rsync \
         netcat-traditional \
         locales \
+        openjdk-8-jre-headless \
+        python3.10-venv \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
@@ -107,4 +114,10 @@ ENV PYTHONPATH ${AIRFLOW_HOME}
 EXPOSE 8080 5555 8793
 
 WORKDIR ${AIRFLOW_HOME}
+
+RUN python3 -m venv dbt_venv \
+    && . dbt_venv/bin/activate \
+    && pip install --no-cache-dir dbt-spark[PyHive] dbt-core \
+    && deactivate
+
 ENTRYPOINT ["/entrypoint.sh"]
