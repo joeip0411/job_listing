@@ -10,7 +10,7 @@ from airflow.models import Connection
 from airflow.providers.amazon.aws.hooks.emr import EmrHook
 from bs4 import BeautifulSoup
 from cosmos import DbtTaskGroup
-from include.constants import (
+from include.job_listing.constants import (
     DBT_EXECUTION_CONFIG,
     DBT_PROFILE_CONFIG,
     DBT_PROJECT_CONFIG,
@@ -20,7 +20,7 @@ from include.constants import (
     GLUE_DATABASE,
     SPARK_CONF,
 )
-from include.hooks import AdzunaHook, ChatCompletionHook
+from include.job_listing.hooks import AdzunaHook, ChatCompletionHook
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import (

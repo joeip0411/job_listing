@@ -31,7 +31,6 @@ now = timezone.utcnow
 DAG_ID = os.path.basename(__file__).replace(".pyc", "").replace(".py", "")
 START_DATE = airflow.utils.dates.days_ago(1)
 # How often to Run. @daily - Once a day at Midnight (UTC)
-SCHEDULE_INTERVAL = "@daily"
 # Who is listed as the owner of this DAG in the Airflow Web Server
 DAG_OWNER_NAME = "operations"
 # List of email address to send email alerts to if this job fails
@@ -73,7 +72,7 @@ DATABASE_OBJECTS = [
     },
     {
         "airflow_db_model": TaskInstance,
-        "age_check_column": TaskInstance.execution_date,
+        "age_check_column": TaskInstance.end_date,
         "keep_last": False,
         "keep_last_filters": None,
         "keep_last_group_by": None,
@@ -87,7 +86,7 @@ DATABASE_OBJECTS = [
     },
     {
         "airflow_db_model": XCom,
-        "age_check_column": XCom.execution_date,
+        "age_check_column": XCom.timestamp,
         "keep_last": False,
         "keep_last_filters": None,
         "keep_last_group_by": None,
@@ -112,7 +111,7 @@ try:
     from airflow.models import TaskReschedule
     DATABASE_OBJECTS.append({
         "airflow_db_model": TaskReschedule,
-        "age_check_column": TaskReschedule.execution_date,
+        "age_check_column": TaskReschedule.end_date,
         "keep_last": False,
         "keep_last_filters": None,
         "keep_last_group_by": None,
@@ -140,7 +139,7 @@ try:
     from airflow.models import RenderedTaskInstanceFields
     DATABASE_OBJECTS.append({
         "airflow_db_model": RenderedTaskInstanceFields,
-        "age_check_column": RenderedTaskInstanceFields.execution_date,
+        "age_check_column": RenderedTaskInstanceFields.run_id,
         "keep_last": False,
         "keep_last_filters": None,
         "keep_last_group_by": None,
@@ -205,7 +204,7 @@ default_args = {
 dag = DAG(
     DAG_ID,
     default_args=default_args,
-    schedule_interval=SCHEDULE_INTERVAL,
+    schedule=None,
     start_date=START_DATE,
     tags=['airflow-maintenance'],
 )
@@ -373,4 +372,4 @@ for db_object in DATABASE_OBJECTS:
         dag=dag,
     )
 
-    print_configuration.set_downstream(cleanup_op)
+    print_configuration >> cleanup_op
