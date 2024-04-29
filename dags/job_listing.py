@@ -21,6 +21,7 @@ from include.job_listing.constants import (
     SPARK_CONF,
 )
 from include.job_listing.hooks import AdzunaHook, ChatCompletionHook
+from include.util import task_fail_slack_alert, task_success_slack_alert
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import (
@@ -45,6 +46,8 @@ default_args = {
      owner_links={'admin':'https://airflow.apache.org'},
      tags=['ELT'],
      default_args=default_args,
+     on_failure_callback=task_fail_slack_alert,
+     on_success_callback=task_success_slack_alert,
      )
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API

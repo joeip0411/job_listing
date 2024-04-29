@@ -14,6 +14,7 @@ import airflow
 from airflow import settings
 from airflow.models import DAG, DagModel
 from airflow.operators.python import PythonOperator
+from include.util import task_fail_slack_alert, task_success_slack_alert
 
 # airflow-clear-missing-dags
 DAG_ID = os.path.basename(__file__).replace(".pyc", "").replace(".py", "")
@@ -45,6 +46,8 @@ dag = DAG(
     schedule=SCHEDULE,
     start_date=START_DATE,
     tags=['airflow-maintenance'],
+    on_success_callback=task_success_slack_alert,
+    on_failure_callback=task_fail_slack_alert,
 )
 if hasattr(dag, 'doc_md'):
     dag.doc_md = __doc__
