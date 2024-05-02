@@ -1,8 +1,6 @@
 {{ config(
-    materialized='incremental',
-    incremental_strategy='merge',
-    file_format='iceberg',
-    unqiue_key=['job_key', 'skill_key']
+    materialized='table',
+    file_format='iceberg'
 ) }}
 
 with cte as (
