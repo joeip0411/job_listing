@@ -1,17 +1,33 @@
 {{ config(
-    materialized='incremental',
-    incremental_strategy='merge',
-    file_format='iceberg',
-    unqiue_key=['job_description_key']
+    materialized='table',
+    file_format='iceberg'
 ) }}
 
-with cte as (
-    select
-        md5(l.id) as job_description_key,
+WITH cte AS (
+    SELECT
+        md5(l.id) AS job_description_key,
         l.title,
-        d.job_description
-    from {{ ref('slvr__job_listing')}} l join {{ ref('slvr__job_description')}} d on l.id = d.id
-
+        d.job_description,
+        row_number() over (
+            PARTITION by l.id
+            ORDER BY
+                l.extraction_time_utc DESC
+        ) AS row_num
+    FROM
+        {{ ref('slvr__job_listing') }} l
+        JOIN {{ ref('slvr__job_description') }} d ON l.id = d.id
+),
+final AS (
+    SELECT
+        job_description_key,
+        title,
+        job_description
+    FROM
+        cte
+    WHERE
+        row_num = 1
 )
-
-select * from cte
+SELECT
+    *
+FROM
+    final

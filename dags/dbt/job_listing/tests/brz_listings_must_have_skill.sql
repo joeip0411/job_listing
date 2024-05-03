@@ -1,5 +1,13 @@
-select
+SELECT
     count(*)
-from {{ ref('brz__job_listing') }}
-where id not in (select id from {{ ref('brz__job_skills')}})
-having count(*) > 0
+FROM
+    {{ ref('brz__job_listing') }}
+WHERE
+    id NOT IN (
+        SELECT
+            id
+        FROM
+            {{ ref('brz__job_skills') }}
+    )
+HAVING
+    count(*) > 0

@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 import pendulum
@@ -9,7 +10,7 @@ from airflow.models import Connection
 from airflow.providers.amazon.aws.hooks.emr import EmrHook
 from bs4 import BeautifulSoup
 from cosmos import DbtTaskGroup
-from include.constants import (
+from include.job_listing.constants import (
     DBT_EXECUTION_CONFIG,
     DBT_PROFILE_CONFIG,
     DBT_PROJECT_CONFIG,
@@ -19,7 +20,8 @@ from include.constants import (
     GLUE_DATABASE,
     SPARK_CONF,
 )
-from include.hooks import AdzunaHook, ChatCompletionHook
+from include.job_listing.hooks import AdzunaHook, ChatCompletionHook
+from include.util import task_fail_slack_alert, task_success_slack_alert
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import (
@@ -30,12 +32,23 @@ from pyspark.sql.types import (
     StructType,
 )
 
+default_args = {
+    'owner': 'engineering',
+    'email': 'some_email@gmail.com',
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'start_date': pendulum.datetime(2024,4,8, tz='UTC'),
+}
 
-@dag(dag_id='job_listing_processing',
-     start_date=pendulum.datetime(2024,4,8, tz='UTC'),
+@dag(dag_id=os.path.basename(__file__).replace(".pyc", "").replace(".py", ""),
      schedule=None,
      catchup=False,
-     owner_links={'admin':'https://airflow.apache.org'})
+     owner_links={'admin':'https://airflow.apache.org'},
+     tags=['ELT'],
+     default_args=default_args,
+     on_failure_callback=task_fail_slack_alert,
+     on_success_callback=task_success_slack_alert,
+     )
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API
     """

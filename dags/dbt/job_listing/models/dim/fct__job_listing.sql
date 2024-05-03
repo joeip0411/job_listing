@@ -2,6 +2,7 @@
     materialized='incremental',
     incremental_strategy='merge',
     file_format='iceberg',
+    partition_by=['extraction_date_day'],
     unqiue_key=['job_key', 'extraction_date_key']
 ) }}
 

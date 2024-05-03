@@ -95,7 +95,7 @@ EMR_JOB_FLOW_OVERRIDES = {
 }
 
 DBT_PROJECT_NAME = "job_listing"
-DBT_ROOT_PATH = Path(__file__).parent.parent / "dbt"
+DBT_ROOT_PATH = Path(__file__).parent.parent.parent / "dbt"
 DBT_PROJECT_CONFIG = ProjectConfig(dbt_project_path= DBT_ROOT_PATH / DBT_PROJECT_NAME)
 DBT_PROFILE_CONFIG = ProfileConfig(
     profile_name="default",
@@ -103,7 +103,8 @@ DBT_PROFILE_CONFIG = ProfileConfig(
     profile_mapping=SparkThriftProfileMapping(
         conn_id="dbt_conn",
         profile_args={"user": "hadoop",
-                        "schema": "job"},
+                        "schema": "job",
+                        "threads": 4},
     ),
 )
 DBT_EXECUTION_CONFIG=ExecutionConfig(
