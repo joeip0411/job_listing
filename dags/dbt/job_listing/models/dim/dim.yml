@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: dim__category
+    columns:
+      - name: category_key
+        tests:
+          - unique
+          - not_null
+  - name: dim__company
+    columns:
+      - name: company_key
+        tests:
+          - unique
+          - not_null
+  - name: dim__contract_type
+    columns:
+      - name: contract_type_key
+        tests:
+          - unique
+          - not_null
+  - name: dim__job_description
+    columns:
+      - name: job_description_key
+        tests:
+          - unique
+          - not_null
+  - name: dim__location
+    columns:
+      - name: location_key
+        tests:
+          - unique
+          - not_null
+  - name: dim__skill
+    columns:
+      - name: skill_key
+        tests:
+          - unique
+          - not_null
+
+
+
+             
