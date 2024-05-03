@@ -103,7 +103,8 @@ DBT_PROFILE_CONFIG = ProfileConfig(
     profile_mapping=SparkThriftProfileMapping(
         conn_id="dbt_conn",
         profile_args={"user": "hadoop",
-                        "schema": "job"},
+                        "schema": "job",
+                        "threads": 4},
     ),
 )
 DBT_EXECUTION_CONFIG=ExecutionConfig(

@@ -8,10 +8,6 @@ services:
       - .env
     restart: always
     build: .
-    environment:
-      - AIRFLOW_BASE_URL=http://localhost:8080
-      - ENABLE_REMOTE_LOGGING=False
-      - STAGE=dev
     volumes:
         - ./dags:/usr/local/airflow/dags
     ports:
@@ -32,8 +28,4 @@ services:
       - webserver
     volumes:
       - ./dags:/usr/local/airflow/dags
-    environment:
-      - AIRFLOW_BASE_URL=http://localhost:8080
-      - ENABLE_REMOTE_LOGGING=False
-      - STAGE=dev
     command: scheduler
