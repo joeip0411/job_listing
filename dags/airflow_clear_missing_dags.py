@@ -11,16 +11,18 @@ import socket
 from datetime import timedelta
 
 import airflow
+import pendulum
 from airflow import settings
 from airflow.models import DAG, DagModel
 from airflow.operators.python import PythonOperator
 from include.util import task_fail_slack_alert, task_success_slack_alert
 
+local_tz = pendulum.timezone("Australia/Sydney")
+SCHEDULE="25 2 * * *"
+
 # airflow-clear-missing-dags
 DAG_ID = os.path.basename(__file__).replace(".pyc", "").replace(".py", "")
-START_DATE = airflow.utils.dates.days_ago(1)
-# How often to Run. @daily - Once a day at Midnight
-SCHEDULE=None
+
 # Who is listed as the owner of this DAG in the Airflow Web Server
 DAG_OWNER_NAME = "operations"
 # List of email address to send email alerts to if this job fails
@@ -35,7 +37,7 @@ default_args = {
     'email': ALERT_EMAIL_ADDRESSES,
     'email_on_failure': True,
     'email_on_retry': False,
-    'start_date': START_DATE,
+    'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
@@ -44,10 +46,10 @@ dag = DAG(
     DAG_ID,
     default_args=default_args,
     schedule=SCHEDULE,
-    start_date=START_DATE,
     tags=['airflow-maintenance'],
     on_success_callback=task_success_slack_alert,
     on_failure_callback=task_fail_slack_alert,
+    catchup=False,
 )
 if hasattr(dag, 'doc_md'):
     dag.doc_md = __doc__
