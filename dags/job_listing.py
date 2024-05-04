@@ -32,16 +32,18 @@ from pyspark.sql.types import (
     StructType,
 )
 
+local_tz = pendulum.timezone("Australia/Sydney")
+
 default_args = {
     'owner': 'engineering',
     'email': 'some_email@gmail.com',
     'email_on_failure': True,
     'email_on_retry': False,
-    'start_date': pendulum.datetime(2024,4,8, tz='UTC'),
+    'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
 }
 
 @dag(dag_id=os.path.basename(__file__).replace(".pyc", "").replace(".py", ""),
-     schedule=None,
+     schedule="0 2 * * *",
      catchup=False,
      owner_links={'admin':'https://airflow.apache.org'},
      tags=['ELT'],

@@ -11,7 +11,6 @@ case "$1" in
     sleep 15
     exec airflow "$@"
     ;;
-  # worker)
   version)
     exec airflow "$@"
     ;;

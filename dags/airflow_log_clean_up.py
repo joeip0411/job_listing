@@ -11,20 +11,21 @@ from datetime import timedelta
 
 import airflow
 import jinja2
+import pendulum
 from airflow.configuration import conf
 from airflow.models import DAG, Variable
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
 
+local_tz = pendulum.timezone("Australia/Sydney")
+SCHEDULE="25 2 * * *"
 # airflow-log-cleanup
 DAG_ID = os.path.basename(__file__).replace(".pyc", "").replace(".py", "")
-START_DATE = airflow.utils.dates.days_ago(1)
 try:
     BASE_LOG_FOLDER = conf.get("core", "BASE_LOG_FOLDER").rstrip("/")
 except Exception as e:
     BASE_LOG_FOLDER = conf.get("logging", "BASE_LOG_FOLDER").rstrip("/")
-# How often to Run. @daily - Once a day at Midnight
-SCHEDULE_INTERVAL = "@daily"
+
 # Who is listed as the owner of this DAG in the Airflow Web Server
 DAG_OWNER_NAME = "operations"
 # List of email address to send email alerts to if this job fails
@@ -74,18 +75,18 @@ default_args = {
     'email': ALERT_EMAIL_ADDRESSES,
     'email_on_failure': True,
     'email_on_retry': False,
-    'start_date': START_DATE,
+    'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
     'retries': 1,
-    'retry_delay': timedelta(minutes=1)
+    'retry_delay': timedelta(minutes=1),
 }
 
 dag = DAG(
     DAG_ID,
     default_args=default_args,
-    schedule_interval=SCHEDULE_INTERVAL,
-    start_date=START_DATE,
+    schedule=SCHEDULE,
     tags=['airflow-maintenance'],
-    template_undefined=jinja2.Undefined
+    template_undefined=jinja2.Undefined,
+    catchup=False,
 )
 if hasattr(dag, 'doc_md'):
     dag.doc_md = __doc__
