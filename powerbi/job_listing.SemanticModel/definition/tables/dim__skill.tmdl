@@ -1,0 +1,35 @@
+table dim__skill
+	lineageTag: f1bb3880-e0db-4921-825d-ad3a1feef61b
+
+	column skill_key
+		dataType: string
+		isKey
+		lineageTag: d2570e20-7869-4bf9-8f41-efa016df892e
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: skill_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Skill
+		dataType: string
+		lineageTag: 7eec9b35-adf9-4c83-9965-06843a579028
+		summarizeBy: none
+		sourceColumn: Skill
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim__skill = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__skill_Table = job_Schema{[Name="dim__skill",Kind="Table"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(dim__skill_Table,{{"skill", "Skill"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_ResultType = Table
+

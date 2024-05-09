@@ -1,0 +1,501 @@
+table dim__ad_creation_date
+	lineageTag: be728833-ab64-4113-8061-6e9c25b76547
+
+	column ad_creation_date_key
+		dataType: string
+		isKey
+		lineageTag: ea2a3a21-44eb-49d5-b077-8eb28f63d745
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: ad_creation_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 7701184e-0890-46d8-b71a-69ada3f1bfce
+		summarizeBy: none
+		sourceColumn: ad_creation_date_day
+
+		variation Variation
+			isDefault
+			relationship: 563a16de-d6b7-434b-bcc4-704e064a167f
+			defaultHierarchy: LocalDateTable_56724741-d271-44bf-8028-599dd84b9eeb.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ee60ea8f-0c73-453d-9849-12c6de8c8531
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_date_day
+
+		variation Variation
+			isDefault
+			relationship: 7052732d-953b-4fc2-b6e1-fbd597aeb2d7
+			defaultHierarchy: LocalDateTable_ec2a10cd-867a-42ea-a9c5-6a1e816f864d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_next_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 58803d5c-d23f-4a49-834d-c3fb4c6fc832
+		summarizeBy: none
+		sourceColumn: ad_creation_next_date_day
+
+		variation Variation
+			isDefault
+			relationship: 686f02d9-f852-4c37-abb1-528a870169f6
+			defaultHierarchy: LocalDateTable_b5e31d50-dc35-4bc9-9dd7-2ccd9b089a5a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: faabcebb-7281-429c-8372-0f193db706b5
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_date_day
+
+		variation Variation
+			isDefault
+			relationship: 78cb9e7a-6fd2-45d5-ab93-fb3d0531397e
+			defaultHierarchy: LocalDateTable_dd8fb991-6f06-4f9a-a961-598f8b4d3f3f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_over_year_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 205dbeb5-4593-4728-9f36-9fe4cb4948a5
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_over_year_date_day
+
+		variation Variation
+			isDefault
+			relationship: 2e9afb8f-fedf-4ccd-bb16-09c827e63875
+			defaultHierarchy: LocalDateTable_f554b415-e605-476c-9411-3f386585bdb4.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_day_of_week
+		dataType: int64
+		formatString: 0
+		lineageTag: 127ad881-e73d-48f1-a4af-7e369a756f78
+		summarizeBy: sum
+		sourceColumn: ad_creation_day_of_week
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_day_of_week_iso
+		dataType: int64
+		formatString: 0
+		lineageTag: e59fc385-5850-4e93-9779-a2f27db0169f
+		summarizeBy: sum
+		sourceColumn: ad_creation_day_of_week_iso
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_day_of_week_name
+		dataType: string
+		lineageTag: f8486490-b2e8-4d9c-9926-8381150664c6
+		summarizeBy: none
+		sourceColumn: ad_creation_day_of_week_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_day_of_week_name_short
+		dataType: string
+		lineageTag: 39e70bc6-c7de-484e-ad64-a14c47a3b010
+		summarizeBy: none
+		sourceColumn: ad_creation_day_of_week_name_short
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_day_of_month
+		dataType: int64
+		formatString: 0
+		lineageTag: 10ab80af-2db9-4df2-aceb-20115d54591c
+		summarizeBy: sum
+		sourceColumn: ad_creation_day_of_month
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_day_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 92cff1de-058d-4b2c-81bb-4513f18a5fbb
+		summarizeBy: sum
+		sourceColumn: ad_creation_day_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 329b7ad3-829e-4324-99ae-1b9d67992424
+		summarizeBy: none
+		sourceColumn: ad_creation_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: a278f2dc-dd4d-4f07-9528-466c29730414
+			defaultHierarchy: LocalDateTable_29a23d7c-1feb-40d2-93bb-14bec0cedfed.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 92e28e8d-d31a-4d12-b142-2b2bf887a0e7
+		summarizeBy: none
+		sourceColumn: ad_creation_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: 9b4bf486-1b60-4ad0-a27d-e89b8ddf77cb
+			defaultHierarchy: LocalDateTable_9366ccd3-9512-4e6a-bc7b-ba432455dccb.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 54a11723-0c87-48f2-8f39-563bed1224db
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: b4ee5274-5153-4b24-9c88-ed3f23e02ca0
+			defaultHierarchy: LocalDateTable_221f68a5-ced6-4eeb-b40f-3fa3d69c9cb8.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 8d0f40b2-002f-4aee-b376-d8708a4f113d
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: 8549c86b-b188-40d7-ba88-9708faab61e0
+			defaultHierarchy: LocalDateTable_51c33d8d-f996-4613-bde7-05ac1280bd01.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 51fd51e5-1f85-4e2f-8687-0c0cf9e57581
+		summarizeBy: sum
+		sourceColumn: ad_creation_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_iso_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f1052f81-64b8-44b5-af20-939fe08b7315
+		summarizeBy: none
+		sourceColumn: ad_creation_iso_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: 89d2d3d7-e63e-4a3e-97ed-64a8da1f0c7f
+			defaultHierarchy: LocalDateTable_f6e3129e-3619-46ec-bd81-b25e713fcce9.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_iso_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 89959188-c635-44c9-9aca-49adc5053bb7
+		summarizeBy: none
+		sourceColumn: ad_creation_iso_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: c5326d98-156c-4b3c-a9d9-ffee2fe7beb6
+			defaultHierarchy: LocalDateTable_6a7b69c9-73a1-4834-a50d-8a216118a393.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_iso_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 74bba19a-c17e-44b8-a191-e286a58ba982
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_iso_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: 3351b0b7-e58e-4fbc-8314-dc6e85bc9db6
+			defaultHierarchy: LocalDateTable_307c98da-ec85-4b96-9a12-6ac4f84299ce.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_iso_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e1b40965-2671-4346-83fd-f22443cea2ef
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_iso_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: b4a3db77-e7d5-4799-b69b-fb1622d5bcda
+			defaultHierarchy: LocalDateTable_4299b8df-44cc-4869-ba46-566db26b61e7.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_iso_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: b012faaf-c088-426a-8ec3-eb0b1ab0dc09
+		summarizeBy: sum
+		sourceColumn: ad_creation_iso_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_prior_year_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 24c220e2-5521-4278-a59a-55a3c3c80ec9
+		summarizeBy: sum
+		sourceColumn: ad_creation_prior_year_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_prior_year_iso_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 0b2d7925-6dfa-4289-b5b9-972fcf68c73b
+		summarizeBy: sum
+		sourceColumn: ad_creation_prior_year_iso_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_month_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: b20392be-6d33-4401-a7cd-36500cc9bd86
+		summarizeBy: sum
+		sourceColumn: ad_creation_month_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_month_name
+		dataType: string
+		lineageTag: 7307a35b-530b-476e-a225-5d582dad807d
+		summarizeBy: none
+		sourceColumn: ad_creation_month_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_month_name_short
+		dataType: string
+		lineageTag: 41af7c3f-0e79-411b-876e-4ff699e6cc32
+		summarizeBy: none
+		sourceColumn: ad_creation_month_name_short
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_month_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 75e73612-3dc0-485b-87fe-9f3b9ab4fb89
+		summarizeBy: none
+		sourceColumn: ad_creation_month_start_date
+
+		variation Variation
+			isDefault
+			relationship: e9e13f49-2c98-4e10-8de9-bbe45f72cc14
+			defaultHierarchy: LocalDateTable_6aac1082-e753-41af-b42b-3510f849c44a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_month_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 17448944-e243-4ed0-85e9-8fef8323805f
+		summarizeBy: none
+		sourceColumn: ad_creation_month_end_date
+
+		variation Variation
+			isDefault
+			relationship: 5739dce3-30b6-4067-8510-ac7bec8630e3
+			defaultHierarchy: LocalDateTable_c8860c67-24c3-44ac-b018-2fb48cafbd14.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_month_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 663aaf35-156a-40c7-8419-d87867f6f63d
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_month_start_date
+
+		variation Variation
+			isDefault
+			relationship: c74be47d-f543-4318-a60c-02cc071d7cdd
+			defaultHierarchy: LocalDateTable_456a11b7-1464-48ba-9876-f9f23fbe016b.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_prior_year_month_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 03d86342-aa45-4d74-8b11-6a99fc97dbe6
+		summarizeBy: none
+		sourceColumn: ad_creation_prior_year_month_end_date
+
+		variation Variation
+			isDefault
+			relationship: d8bc464d-285c-49ef-b538-def61aa9673d
+			defaultHierarchy: LocalDateTable_f62a45ed-db02-4bf7-9c6b-d476bf7b8908.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_quarter_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 71d32c4d-d750-416b-9c22-d537da8961ea
+		summarizeBy: sum
+		sourceColumn: ad_creation_quarter_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_quarter_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: d89cf49e-7292-4504-abee-d6c412aea7cf
+		summarizeBy: none
+		sourceColumn: ad_creation_quarter_start_date
+
+		variation Variation
+			isDefault
+			relationship: 52041a07-4adc-4482-ba09-3dd2302aa880
+			defaultHierarchy: LocalDateTable_a6a90d70-0b10-4f4e-9253-597641289b69.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_quarter_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c17c24d8-6835-4fc5-bc67-916ec06860b5
+		summarizeBy: none
+		sourceColumn: ad_creation_quarter_end_date
+
+		variation Variation
+			isDefault
+			relationship: 614b4ab6-af0d-46cb-bf16-42b8a73636e9
+			defaultHierarchy: LocalDateTable_e8f3e32c-f98b-4a21-bd12-97627083e328.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_year_number
+		dataType: int64
+		formatString: 0
+		lineageTag: df9f00d9-664b-4fe0-917f-dd7fa2b8da51
+		summarizeBy: sum
+		sourceColumn: ad_creation_year_number
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_year_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: eccebacd-8f07-4d40-83e4-74c019483554
+		summarizeBy: none
+		sourceColumn: ad_creation_year_start_date
+
+		variation Variation
+			isDefault
+			relationship: 8976c5a7-265b-47fd-afa9-9ea23cca5657
+			defaultHierarchy: LocalDateTable_5869278d-1bb5-4a58-947c-53cd40616f3c.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ad_creation_year_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 001b1c5d-c3a6-415a-8f0b-994882ce37a8
+		summarizeBy: none
+		sourceColumn: ad_creation_year_end_date
+
+		variation Variation
+			isDefault
+			relationship: a71abfed-ba98-4692-ab0e-ca61f8cb0d1e
+			defaultHierarchy: LocalDateTable_a22f007f-b666-41d3-bdda-046571bbe734.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Ad Creation Date' = FORMAT(dim__ad_creation_date[ad_creation_date_day], "YYYY-MM-DD")
+		dataType: string
+		lineageTag: da4925b7-cdac-4c0b-a81f-cfaadf976f2c
+		summarizeBy: none
+		isDataTypeInferred
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim__ad_creation_date = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__ad_creation_date_Table = job_Schema{[Name="dim__ad_creation_date",Kind="Table"]}[Data]
+				in
+				    dim__ad_creation_date_Table
+
+	annotation PBI_ResultType = Table
+

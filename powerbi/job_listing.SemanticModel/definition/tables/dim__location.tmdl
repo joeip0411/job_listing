@@ -1,0 +1,59 @@
+table dim__location
+	lineageTag: c178725f-b2fd-486d-8324-c052460217dc
+
+	column location_key
+		dataType: string
+		isKey
+		lineageTag: cdc8aa0d-34a3-47bf-8cf8-2746fccfff9a
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: location_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: 30ce9f88-c43d-4de1-bb25-139a2910d89f
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: ece664e0-94a3-4894-a32b-6f344d243dd7
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: b9af35b9-8582-4464-abd4-9890a60b01fc
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: f41c01b6-db9f-4c0e-8686-d84190e33485
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim__location = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__location_Table = job_Schema{[Name="dim__location",Kind="Table"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(dim__location_Table,{{"region", "Region"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_ResultType = Table
+

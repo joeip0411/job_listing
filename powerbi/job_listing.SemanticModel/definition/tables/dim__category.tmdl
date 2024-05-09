@@ -1,0 +1,34 @@
+table dim__category
+	lineageTag: bc81ce00-3ff2-4660-94dd-8667e4e8bb02
+
+	column category_key
+		dataType: string
+		isKey
+		lineageTag: 3b911048-4d11-4526-b51f-e669135f4329
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: category_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_description
+		dataType: string
+		lineageTag: 008c3e1d-5bd2-4b37-b320-a44143044d26
+		summarizeBy: none
+		sourceColumn: category_description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim__category = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__category_Table = job_Schema{[Name="dim__category",Kind="Table"]}[Data]
+				in
+				    dim__category_Table
+
+	annotation PBI_ResultType = Table
+

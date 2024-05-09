@@ -1,0 +1,35 @@
+table dim__company
+	lineageTag: 49ec7723-3aa6-4c3f-ad20-f6bf0844571b
+
+	column company_key
+		dataType: string
+		isKey
+		lineageTag: 6830b7c5-7185-4143-9a51-048b6c47f947
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: company_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Company
+		dataType: string
+		lineageTag: 6d0de22c-0240-4cdc-81b6-4dd7fa38f2f5
+		summarizeBy: none
+		sourceColumn: Company
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim__company = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__company_Table = job_Schema{[Name="dim__company",Kind="Table"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(dim__company_Table,{{"company", "Company"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_ResultType = Table
+

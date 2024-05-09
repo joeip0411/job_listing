@@ -1,0 +1,139 @@
+table fct__job_listing_daily_snapshot
+	lineageTag: 537a509f-5311-415e-9979-c06990a4193b
+
+	column job_key
+		dataType: string
+		lineageTag: fdeb086d-8768-4b08-bc6a-bcb2dbd7f924
+		summarizeBy: none
+		sourceColumn: job_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID
+		dataType: string
+		lineageTag: 3175fc35-9892-4191-ba47-0da1976531b2
+		summarizeBy: none
+		sourceColumn: ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_key
+		dataType: string
+		lineageTag: 7becd6f7-58be-4e08-b04a-1ed33f9cf7c1
+		summarizeBy: none
+		sourceColumn: category_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column company_key
+		dataType: string
+		lineageTag: 6e87479d-e7af-47c2-95f7-20f1fb2ec078
+		summarizeBy: none
+		sourceColumn: company_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column location_key
+		dataType: string
+		lineageTag: 6e3ec135-ef68-47bf-947d-3654ad4d7db4
+		summarizeBy: none
+		sourceColumn: location_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column contract_type_key
+		dataType: string
+		lineageTag: 1d9440d3-b82f-46de-a459-a506b0a29e1e
+		summarizeBy: none
+		sourceColumn: contract_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column job_description_key
+		dataType: string
+		lineageTag: ac55584a-2772-4e09-967a-bed8fa27d0cf
+		summarizeBy: none
+		sourceColumn: job_description_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_date_key
+		dataType: string
+		lineageTag: 0a271b75-f1a5-47b7-a476-b9066516e8a1
+		summarizeBy: none
+		sourceColumn: ad_creation_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column ad_creation_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 598a7b1e-a8fc-4628-bee3-326831f7cfa9
+		summarizeBy: none
+		sourceColumn: ad_creation_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_date_key
+		dataType: string
+		lineageTag: 732cd6ef-ca79-4ebe-9865-ab6f7491c6ae
+		summarizeBy: none
+		sourceColumn: extraction_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2cab3034-a1b1-4aff-8dd8-682fa08b08a2
+		summarizeBy: none
+		sourceColumn: extraction_date_day
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column salary_min
+		dataType: int64
+		formatString: 0
+		lineageTag: fc25da96-bcc6-4950-8bc3-b9b260fa99a4
+		summarizeBy: sum
+		sourceColumn: salary_min
+
+		annotation SummarizationSetBy = Automatic
+
+	column salary_max
+		dataType: int64
+		formatString: 0
+		lineageTag: 0de6ac29-1e64-4ded-9df6-6b505baafcdd
+		summarizeBy: sum
+		sourceColumn: salary_max
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_new_job = IF(fct__job_listing_daily_snapshot[ad_creation_date] = fct__job_listing_daily_snapshot[extraction_date_day], 1,0)
+		dataType: int64
+		formatString: 0
+		lineageTag: c2c1ddc9-486d-4dd7-995e-155c9df870c4
+		summarizeBy: sum
+		isDataTypeInferred
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct__job_listing_daily_snapshot = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    fct__job_listing_Table = job_Schema{[Name="fct__job_listing",Kind="Table"]}[Data],
+				    #"Filtered Rows1" = Table.SelectRows(fct__job_listing_Table, each [extraction_date_day] >= #date(2024, 4, 26)),
+				    #"Renamed Columns" = Table.RenameColumns(#"Filtered Rows1",{{"id", "ID"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_ResultType = Table
+

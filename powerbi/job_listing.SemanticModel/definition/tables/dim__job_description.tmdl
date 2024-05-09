@@ -1,0 +1,43 @@
+table dim__job_description
+	lineageTag: c742779c-ae1a-43a8-983b-d7fa293be679
+
+	column job_description_key
+		dataType: string
+		isKey
+		lineageTag: b2ba293f-7a34-46c8-ac22-177d706114ce
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: job_description_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Title
+		dataType: string
+		lineageTag: e2e0abbf-f18c-4a4b-9e98-e53b6698ce89
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column job_description
+		dataType: string
+		lineageTag: 49bcfa51-bd64-4087-9333-9aced6584b3c
+		summarizeBy: none
+		sourceColumn: job_description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim__job_description = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__job_description_Table = job_Schema{[Name="dim__job_description",Kind="Table"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(dim__job_description_Table,{{"title", "Title"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_ResultType = Table
+
