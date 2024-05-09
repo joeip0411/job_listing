@@ -1,0 +1,50 @@
+table cal__salary_pct_rank
+	lineageTag: 67907965-886c-4acf-9e6a-bf0e452ae611
+
+	column id
+		dataType: string
+		lineageTag: 21978a68-3092-41c1-bcab-4e334b295630
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column job_key
+		dataType: string
+		lineageTag: c1bd78f1-6582-455a-933c-2aa173173816
+		summarizeBy: none
+		sourceColumn: job_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column salary_max
+		dataType: int64
+		formatString: 0
+		lineageTag: 7bf5c52f-77b7-405d-b085-bbf0fff9b184
+		summarizeBy: none
+		sourceColumn: salary_max
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'PCT Rank'
+		dataType: double
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 53052057-bc06-415d-b32d-c6b7e6043053
+		summarizeBy: none
+		sourceColumn: PCT Rank
+
+		annotation SummarizationSetBy = Automatic
+
+	partition cal__salary_pct_rank = m
+		mode: import
+		source =
+				let
+				    Source = Value.NativeQuery(AmazonAthena.Databases("Amazon Athena", null, []){[Kind="Database"]}[Data], "select#(lf)    id,#(lf)    job_key,#(lf)    salary_max,#(lf)    percent_rank() over (order by salary_max) as pct_rank#(lf)from fct__job_listing#(lf)where extraction_date_day = (select max(extraction_date_day) from fct__job_listing)#(lf)    and salary_max > 0", null, [EnableFolding=true]),
+				    #"Renamed Columns" = Table.RenameColumns(Source,{{"pct_rank", "PCT Rank"}})
+				in
+				    #"Renamed Columns"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

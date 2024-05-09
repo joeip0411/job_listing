@@ -1,0 +1,43 @@
+table dim__contract_type
+	lineageTag: 182cf8cc-8640-419c-abe4-0fc5462bd93e
+
+	column contract_type_key
+		dataType: string
+		isKey
+		lineageTag: c17a8158-0425-4c9b-a921-142c90a99d6a
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: contract_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Contract Type'
+		dataType: string
+		lineageTag: a89a4142-5fdc-4335-9f46-b3d4dbdd8dd3
+		summarizeBy: none
+		sourceColumn: Contract Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column contract_time
+		dataType: string
+		lineageTag: 121f7a51-e91a-4de3-b31f-ea8c97046247
+		summarizeBy: none
+		sourceColumn: contract_time
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim__contract_type = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__contract_type_Table = job_Schema{[Name="dim__contract_type",Kind="Table"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(dim__contract_type_Table,{{"contract_type", "Contract Type"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_ResultType = Table
+

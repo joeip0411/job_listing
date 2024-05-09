@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "author": {
+    "name": "Lukasz Pawlowski",
+    "email": "wallingsoft@live.com"
+  },
+  "resources": [
+    {
+      "resourceId": "rId0",
+      "sourceType": 5,
+      "file": "resources/LongTextViewer_PROD_2_1453740445633.pbiviz.json"
+    }
+  ],
+  "visual": {
+    "guid": "LongTextViewer_PROD_2_1453740445633",
+    "name": "LongTextViewer",
+    "displayName": "Long Text Viewer (PROD.2017.9.1)",
+    "version": "0.3.0",
+    "description": "This visual helps you display long text from your data set in Power BI. When you bind the text to the visual, it wraps the text and scrolls vertically as needed. If your data set includes multiple rows of long text, they are shown one after the other. Updates: Number formatting is supported. Improved formatting and scrolling. Split text across lines.",
+    "supportUrl": "http://wallingsoft.wordpress.com",
+    "gitHubUrl": "",
+    "visualClassName": "LongTextViewer"
+  },
+  "metadata": {
+    "pbivizjson": {
+      "resourceId": "rId0"
+    }
+  }
+}

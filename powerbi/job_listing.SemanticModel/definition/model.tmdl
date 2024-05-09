@@ -1,0 +1,72 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-AU
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["dim__ad_creation_date","dim__category","dim__company","dim__extraction_date","dim__job_description","dim__location","dim__skill","fct__job_listing_daily_snapshot","dim__contract_type","Measure Table","brdg__job_skill","cal__salary_pct_rank"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBIDesktopVersion = 2.128.1177.0 (24.04)
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table dim__ad_creation_date
+ref table DateTableTemplate_95b378d4-27c1-4f23-8703-ee08432dd337
+ref table LocalDateTable_56724741-d271-44bf-8028-599dd84b9eeb
+ref table LocalDateTable_ec2a10cd-867a-42ea-a9c5-6a1e816f864d
+ref table LocalDateTable_b5e31d50-dc35-4bc9-9dd7-2ccd9b089a5a
+ref table LocalDateTable_dd8fb991-6f06-4f9a-a961-598f8b4d3f3f
+ref table LocalDateTable_f554b415-e605-476c-9411-3f386585bdb4
+ref table LocalDateTable_29a23d7c-1feb-40d2-93bb-14bec0cedfed
+ref table LocalDateTable_9366ccd3-9512-4e6a-bc7b-ba432455dccb
+ref table LocalDateTable_221f68a5-ced6-4eeb-b40f-3fa3d69c9cb8
+ref table LocalDateTable_51c33d8d-f996-4613-bde7-05ac1280bd01
+ref table LocalDateTable_f6e3129e-3619-46ec-bd81-b25e713fcce9
+ref table LocalDateTable_6a7b69c9-73a1-4834-a50d-8a216118a393
+ref table LocalDateTable_307c98da-ec85-4b96-9a12-6ac4f84299ce
+ref table LocalDateTable_4299b8df-44cc-4869-ba46-566db26b61e7
+ref table LocalDateTable_6aac1082-e753-41af-b42b-3510f849c44a
+ref table LocalDateTable_c8860c67-24c3-44ac-b018-2fb48cafbd14
+ref table LocalDateTable_456a11b7-1464-48ba-9876-f9f23fbe016b
+ref table LocalDateTable_f62a45ed-db02-4bf7-9c6b-d476bf7b8908
+ref table LocalDateTable_a6a90d70-0b10-4f4e-9253-597641289b69
+ref table LocalDateTable_e8f3e32c-f98b-4a21-bd12-97627083e328
+ref table LocalDateTable_5869278d-1bb5-4a58-947c-53cd40616f3c
+ref table LocalDateTable_a22f007f-b666-41d3-bdda-046571bbe734
+ref table dim__category
+ref table dim__company
+ref table dim__extraction_date
+ref table LocalDateTable_20111fbf-e923-4a1c-8eb0-725372e6a769
+ref table LocalDateTable_acc50d93-387e-4ea2-b13c-a4bbdbfeffd6
+ref table LocalDateTable_18e9849d-0e6e-4755-b033-41966f390a1b
+ref table LocalDateTable_4669ed61-9053-43f1-a4d7-feb3c06ff53a
+ref table LocalDateTable_84aa0dd0-4f94-4765-a63b-c3b599c6cad9
+ref table LocalDateTable_18bcf159-bca1-4f80-a425-e8ae446049a8
+ref table LocalDateTable_66bc1c47-5eac-4096-af13-00ef2f6d8ba6
+ref table LocalDateTable_dd9a4efa-b25a-4297-a7dd-f9e6b4ab39f1
+ref table LocalDateTable_4ebb7ad6-e1e5-49ad-897f-aa1820ae2750
+ref table LocalDateTable_e3fbdd43-6e31-443f-b500-b6de5ba82ad3
+ref table LocalDateTable_c01c50b4-dd19-4b95-9e14-104199236946
+ref table LocalDateTable_e1b111c6-085f-4032-8416-459bf8274b17
+ref table LocalDateTable_d15c0181-211d-4994-a337-50fc7e237b80
+ref table LocalDateTable_ee4a8943-019a-4885-b0a1-d53ff2389317
+ref table LocalDateTable_b3ecc28c-789c-464e-b189-5199ba4d8708
+ref table LocalDateTable_dd38a7b7-4728-4b58-a8d3-9073c10f8e9d
+ref table LocalDateTable_cc1c93c8-55a9-4198-a7f9-7cb00252f275
+ref table LocalDateTable_0668a175-8aac-4a23-a93f-5fb702e86a0f
+ref table LocalDateTable_da8e8592-0a69-475f-a9d0-b6ce44101f80
+ref table LocalDateTable_0d6a4e5b-26cb-4984-9521-8a204b5e8365
+ref table LocalDateTable_1ccb5d70-8044-4214-9e9c-546990156f9d
+ref table dim__job_description
+ref table dim__location
+ref table dim__skill
+ref table fct__job_listing_daily_snapshot
+ref table dim__contract_type
+ref table 'Measure Table'
+ref table brdg__job_skill
+ref table cal__salary_pct_rank
+

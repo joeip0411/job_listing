@@ -1,0 +1,264 @@
+table 'Measure Table'
+	lineageTag: fbe996af-66fd-4bb8-85e9-19ea371764de
+
+	measure 'Job Opening' =
+			CALCULATE(
+			    COUNT(fct__job_listing_daily_snapshot[job_key]),
+			    FILTER(
+			        fct__job_listing_daily_snapshot,
+			        fct__job_listing_daily_snapshot[extraction_date_day] = MAX(fct__job_listing_daily_snapshot[extraction_date_day])
+			    )
+			)
+		formatString: 0
+		displayFolder: Top Cards
+		lineageTag: f3652324-41bf-430f-8809-eef019fd4b86
+
+		changedProperty = IsHidden
+
+	measure 'Updated Date' = max(fct__job_listing_daily_snapshot[extraction_date_day])
+		formatString: Short Date
+		displayFolder: Top Cards
+		lineageTag: 9487725d-c2b5-4c93-9208-5ff4b5fae8d5
+
+		changedProperty = IsHidden
+
+	measure 'Average Min Salary' = AVERAGE(fct__job_listing_daily_snapshot[salary_min])
+		displayFolder: Salary
+		lineageTag: a795e033-b650-4cf0-b0f5-e9217e9560a5
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Average Max Salary' = AVERAGE(fct__job_listing_daily_snapshot[salary_max])
+		displayFolder: Salary
+		lineageTag: 20763d1b-f874-4efe-92fc-00175dcc1b84
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Median Min Salary' = ```
+			
+			    CALCULATE(
+			        MEDIAN(fct__job_listing_daily_snapshot[salary_min]),
+			        FILTER(
+			            fct__job_listing_daily_snapshot,
+			            fct__job_listing_daily_snapshot[extraction_date_day] = max(fct__job_listing_daily_snapshot[extraction_date_day])
+			        )
+			    )
+			
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Top Cards
+		lineageTag: bfcfcf5a-77da-4d3f-8d2a-02175e5ff5ff
+
+		changedProperty = IsHidden
+
+	measure 'Job Count With Salary' =
+			CALCULATE(
+			    COUNTA(fct__job_listing_daily_snapshot[salary_max]),
+			    FILTER(
+			        fct__job_listing_daily_snapshot,
+			        fct__job_listing_daily_snapshot[extraction_date_day] = max(fct__job_listing_daily_snapshot[extraction_date_day])
+			    )
+			)
+		formatString: 0
+		displayFolder: Top Cards
+		lineageTag: 3f4ab0a8-633b-4047-8595-cbecf27c140a
+
+		changedProperty = IsHidden
+
+	measure '% Jobs With Salary Shown' = [Job Count With Salary] / [Job Opening]
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Top Cards
+		lineageTag: 5b5681e1-3327-43a5-b766-68772585699b
+
+		changedProperty = IsHidden
+
+	measure 'Jobs Mentioned' = SUM(brdg__job_skill[mention])
+		formatString: 0
+		displayFolder: Skills
+		lineageTag: cd1a7dfd-7ed3-4dd2-889a-1a325754bb07
+
+		changedProperty = IsHidden
+
+	measure 'New Job Ad Count' = sum(fct__job_listing_daily_snapshot[is_new_job])
+		formatString: 0
+		displayFolder: New Job Ad
+		lineageTag: 78978f1b-660e-4c49-9986-42ec77b1955e
+
+		changedProperty = IsHidden
+
+	measure 'New Job Ad Count (7 day mov avg)' = ```
+			
+			VAR period = DATESINPERIOD(
+			        dim__extraction_date[extraction_date_day],
+			        LASTDATE(dim__extraction_date[extraction_date_day]),
+			        -7,
+			        DAY
+			    )
+			VAR result = AVERAGEX(
+			    period,
+			    [New Job Ad Count]
+			)
+			VAR first_date_in_period = MINX(period, dim__extraction_date[extraction_date_day])
+			VAR last_snapshot_date = max(fct__job_listing_daily_snapshot[extraction_date_day])
+			return if (first_date_in_period < last_snapshot_date, result)
+			
+			```
+		displayFolder: New Job Ad
+		lineageTag: f3907713-bc0c-420d-8188-79a7f404de13
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'New Job Ad Count (30 day mov avg)' =
+			
+			VAR period = DATESINPERIOD(
+			        dim__extraction_date[extraction_date_day],
+			        LASTDATE(dim__extraction_date[extraction_date_day]),
+			        -30,
+			        DAY
+			    )
+			VAR result = AVERAGEX(
+			    period,
+			    [New Job Ad Count]
+			)
+			VAR first_date_in_period = MINX(period, dim__extraction_date[extraction_date_day])
+			VAR last_snapshot_date = max(fct__job_listing_daily_snapshot[extraction_date_day])
+			RETURN if (first_date_in_period < last_snapshot_date, result)
+		displayFolder: New Job Ad
+		lineageTag: 3a3bfda3-73f1-49f3-963c-c4413e72af3f
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'PCT Diff New Job Ad Count (7 and 30)' =
+			
+			[New Job Ad Count (latest 7 day mov avg)]/ [New Job Ad Count (latest 30 day mov avg)] -1
+		displayFolder: New Job Ad
+		lineageTag: a1ba4183-1668-4cd5-b4d9-05a6e4e5a11f
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure GC1 = -1
+		displayFolder: Gauge Chart Marks
+		lineageTag: e4c69acf-7f59-4d1d-816f-4e7235afe789
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure GC2 = 1
+		displayFolder: Gauge Chart Marks
+		lineageTag: 7f34c12b-9c56-49e7-84b4-367096808d72
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Updated Date Max Salary' = ```
+			
+			    CALCULATE(
+			        MAX(fct__job_listing_daily_snapshot[salary_max]),
+			        FILTER(
+			            fct__job_listing_daily_snapshot,
+			            fct__job_listing_daily_snapshot[extraction_date_day] = max(fct__job_listing_daily_snapshot[extraction_date_day])
+			        )
+			    )
+			
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Salary
+		lineageTag: e8c0eef5-1d4f-478e-94d9-9ee7408868e5
+
+	measure 'Median Max Salary' = ```
+			
+			    CALCULATE(
+			        MEDIAN(fct__job_listing_daily_snapshot[salary_max]),
+			        FILTER(
+			            fct__job_listing_daily_snapshot,
+			            fct__job_listing_daily_snapshot[extraction_date_day] = max(fct__job_listing_daily_snapshot[extraction_date_day])
+			        )
+			    )
+			
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Top Cards
+		lineageTag: 2b36fe20-14ea-4540-b2af-a4dca571ff22
+
+	measure 'Updated Date Min Salary' = ```
+			
+			    CALCULATE(
+			        [Average Min Salary](fct__job_listing_daily_snapshot[salary_max]),
+			        FILTER(
+			            fct__job_listing_daily_snapshot,
+			            fct__job_listing_daily_snapshot[extraction_date_day] = max(fct__job_listing_daily_snapshot[extraction_date_day])
+			        )
+			    )
+			
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Salary
+		lineageTag: 6da7fdb9-cbe9-4c4a-8180-d07728fd7125
+
+	measure 'New Job Ad Count (latest 7 day mov avg)' =
+			CALCULATE(
+			    [New Job Ad Count (7 day mov avg)],
+			    FILTER(
+			        fct__job_listing_daily_snapshot,
+			        fct__job_listing_daily_snapshot[extraction_date_day] >= max(fct__job_listing_daily_snapshot[extraction_date_day]) - 7
+			    )
+			)
+		displayFolder: New Job Ad
+		lineageTag: 41875dfb-74cc-4f2b-8d1b-3d7f222658d5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'New Job Ad Count (latest 30 day mov avg)' =
+			CALCULATE(
+			    [New Job Ad Count (30 day mov avg)],
+			    FILTER(
+			        fct__job_listing_daily_snapshot,
+			        fct__job_listing_daily_snapshot[extraction_date_day] >= max(fct__job_listing_daily_snapshot[extraction_date_day]) - 30
+			    )
+			)
+		displayFolder: New Job Ad
+		lineageTag: 07de5e0f-47b4-4744-b1df-776996771def
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'salary pct rank' = max(cal__salary_pct_rank[PCT Rank])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Salary
+		lineageTag: 60b8832c-0214-4b2d-ac47-c2894926493f
+
+	measure zero = 0
+		formatString: 0
+		displayFolder: Gauge Chart Marks
+		lineageTag: cb1d6695-65ca-4106-b973-971289a030b8
+
+	measure one = 1
+		formatString: 0
+		displayFolder: Gauge Chart Marks
+		lineageTag: de97d967-e789-4519-9149-d5e4085d6a07
+
+	partition 'Measure Table' = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Column1"})
+				in
+				    #"Removed Columns"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+

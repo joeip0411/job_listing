@@ -1,0 +1,428 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 78,
+        "y": 248
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1320.3744389168796,
+            "y": 0
+          },
+          "nodeIndex": "dim__ad_creation_date",
+          "nodeLineageTag": "be728833-ab64-4113-8061-6e9c25b76547",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 551.82342098345953,
+            "y": 1
+          },
+          "nodeIndex": "dim__category",
+          "nodeLineageTag": "bc81ce00-3ff2-4660-94dd-8667e4e8bb02",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 810.88276762348346,
+            "y": 0
+          },
+          "nodeIndex": "dim__company",
+          "nodeLineageTag": "49ec7723-3aa6-4c3f-ad20-f6bf0844571b",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 301.74040047137782,
+            "y": 0
+          },
+          "nodeIndex": "dim__contract_type",
+          "nodeLineageTag": "182cf8cc-8640-419c-abe4-0fc5462bd93e",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 1589.9161958005034,
+            "y": 0
+          },
+          "nodeIndex": "dim__extraction_date",
+          "nodeLineageTag": "acd6f53e-22f9-468a-aed4-8b2d338e315d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 1062.9433869921234,
+            "y": 0
+          },
+          "nodeIndex": "dim__job_description",
+          "nodeLineageTag": "c742779c-ae1a-43a8-983b-d7fa293be679",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "dim__location",
+          "nodeLineageTag": "c178725f-b2fd-486d-8324-c052460217dc",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 1195.9433869921234,
+            "y": 1119.2531661753294
+          },
+          "nodeIndex": "dim__skill",
+          "nodeLineageTag": "f1bb3880-e0db-4921-825d-ad3a1feef61b",
+          "size": {
+            "height": 145,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 330.8527167390273,
+            "y": 378.36999706184736
+          },
+          "nodeIndex": "fct__job_listing_daily_snapshot",
+          "nodeLineageTag": "537a509f-5311-415e-9979-c06990a4193b",
+          "size": {
+            "height": 300,
+            "width": 276
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 1873.9161958005034,
+            "y": 580.1265830876647
+          },
+          "nodeIndex": "Measure Table",
+          "nodeLineageTag": "fbe996af-66fd-4bb8-85e9-19ea371764de",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 1816.582852294644,
+            "y": 760.1265830876647
+          },
+          "nodeIndex": "brdg__job_skill",
+          "nodeLineageTag": "05577f56-5ee9-415a-9acb-777b81b25724",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 248.91619580050337,
+            "y": 1068.1265830876646
+          },
+          "nodeIndex": "cal__salary_pct_rank",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": true,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    },
+    {
+      "ordinal": 1,
+      "scrollPosition": {
+        "x": 0,
+        "y": 43
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1339.0838910422463,
+            "y": 0
+          },
+          "nodeIndex": "dim__ad_creation_date",
+          "nodeLineageTag": "be728833-ab64-4113-8061-6e9c25b76547",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 799.2375806137494,
+            "y": 0
+          },
+          "nodeIndex": "dim__category",
+          "nodeLineageTag": "bc81ce00-3ff2-4660-94dd-8667e4e8bb02",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 1075.86386595627,
+            "y": 0
+          },
+          "nodeIndex": "dim__company",
+          "nodeLineageTag": "49ec7723-3aa6-4c3f-ad20-f6bf0844571b",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 1605.981150083551,
+            "y": 0
+          },
+          "nodeIndex": "dim__extraction_date",
+          "nodeLineageTag": "acd6f53e-22f9-468a-aed4-8b2d338e315d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 529.997894956381,
+            "y": 0
+          },
+          "nodeIndex": "dim__job_description",
+          "nodeLineageTag": "c742779c-ae1a-43a8-983b-d7fa293be679",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "dim__location",
+          "nodeLineageTag": "c178725f-b2fd-486d-8324-c052460217dc",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 271.06787104590495,
+            "y": 3
+          },
+          "nodeIndex": "dim__contract_type",
+          "nodeLineageTag": "182cf8cc-8640-419c-abe4-0fc5462bd93e",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 455,
+            "y": 718.62001599268717
+          },
+          "nodeIndex": "dim__skill",
+          "nodeLineageTag": "f1bb3880-e0db-4921-825d-ad3a1feef61b",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 792.33333206176758,
+            "y": 972
+          },
+          "nodeIndex": "brdg__job_skill",
+          "nodeLineageTag": "05577f56-5ee9-415a-9acb-777b81b25724",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 1
+        }
+      ],
+      "name": "Latest date snapshot",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": true,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    },
+    {
+      "ordinal": 2,
+      "scrollPosition": {
+        "x": 36,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 793.60493073992711,
+            "y": 473.89907874681035
+          },
+          "nodeIndex": "fct__job_listing_daily_snapshot",
+          "nodeLineageTag": "537a509f-5311-415e-9979-c06990a4193b",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1610,
+            "y": 0
+          },
+          "nodeIndex": "dim__ad_creation_date",
+          "nodeLineageTag": "be728833-ab64-4113-8061-6e9c25b76547",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "dim__category",
+          "nodeLineageTag": "bc81ce00-3ff2-4660-94dd-8667e4e8bb02",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 258.91736332901905,
+            "y": 0
+          },
+          "nodeIndex": "dim__company",
+          "nodeLineageTag": "49ec7723-3aa6-4c3f-ad20-f6bf0844571b",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1353.9024058721639,
+            "y": 0
+          },
+          "nodeIndex": "dim__extraction_date",
+          "nodeLineageTag": "acd6f53e-22f9-468a-aed4-8b2d338e315d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 517.88046279815194,
+            "y": 0
+          },
+          "nodeIndex": "dim__job_description",
+          "nodeLineageTag": "c742779c-ae1a-43a8-983b-d7fa293be679",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1074.8869116693913,
+            "y": 0
+          },
+          "nodeIndex": "dim__location",
+          "nodeLineageTag": "c178725f-b2fd-486d-8324-c052460217dc",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 797.1648867145741,
+            "y": 0
+          },
+          "nodeIndex": "dim__contract_type",
+          "nodeLineageTag": "182cf8cc-8640-419c-abe4-0fc5462bd93e",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All daily snapshot",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": true,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

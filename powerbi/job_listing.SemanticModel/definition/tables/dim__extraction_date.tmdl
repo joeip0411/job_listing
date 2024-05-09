@@ -1,0 +1,493 @@
+table dim__extraction_date
+	lineageTag: acd6f53e-22f9-468a-aed4-8b2d338e315d
+
+	column extraction_date_key
+		dataType: string
+		isKey
+		lineageTag: 1f3d43a5-4a8d-49bc-b577-e4477c341c9c
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: extraction_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 22195b47-36ed-497e-b6ef-07238e0f58e0
+		summarizeBy: none
+		sourceColumn: extraction_date_day
+
+		variation Variation
+			isDefault
+			relationship: e8283540-f31f-4313-bdd2-42282795d303
+			defaultHierarchy: LocalDateTable_20111fbf-e923-4a1c-8eb0-725372e6a769.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ed3bde99-4cfc-47d7-85cd-27510ba24691
+		summarizeBy: none
+		sourceColumn: extraction_prior_date_day
+
+		variation Variation
+			isDefault
+			relationship: 616be60c-d97b-4aad-861e-5d0d5386c730
+			defaultHierarchy: LocalDateTable_acc50d93-387e-4ea2-b13c-a4bbdbfeffd6.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_next_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 4acdf3a5-1468-4845-b674-48e5605f685f
+		summarizeBy: none
+		sourceColumn: extraction_next_date_day
+
+		variation Variation
+			isDefault
+			relationship: 36f6d425-6aae-4006-ae29-45967d1dc935
+			defaultHierarchy: LocalDateTable_18e9849d-0e6e-4755-b033-41966f390a1b.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 22b5cc2b-46b9-49fe-85bf-3bd094d94dc7
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_date_day
+
+		variation Variation
+			isDefault
+			relationship: e8a57a52-b8e3-4aff-a581-ee1a63724c93
+			defaultHierarchy: LocalDateTable_4669ed61-9053-43f1-a4d7-feb3c06ff53a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_over_year_date_day
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 9c41465a-e37e-459b-b5d2-a9d1ddbc3bf6
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_over_year_date_day
+
+		variation Variation
+			isDefault
+			relationship: 16c903ef-5d2a-4f4b-87cd-18d5e46165fe
+			defaultHierarchy: LocalDateTable_84aa0dd0-4f94-4765-a63b-c3b599c6cad9.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_day_of_week
+		dataType: int64
+		formatString: 0
+		lineageTag: d2e5a4d9-1751-41c1-876f-edc60838e2f3
+		summarizeBy: sum
+		sourceColumn: extraction_day_of_week
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_day_of_week_iso
+		dataType: int64
+		formatString: 0
+		lineageTag: 883484c6-c85f-46a3-8253-107c5a73e83c
+		summarizeBy: sum
+		sourceColumn: extraction_day_of_week_iso
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_day_of_week_name
+		dataType: string
+		lineageTag: b5d94554-c0ff-4178-8d83-8afea76710c8
+		summarizeBy: none
+		sourceColumn: extraction_day_of_week_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_day_of_week_name_short
+		dataType: string
+		lineageTag: 73a65501-d629-4999-bb7d-d71591d951a8
+		summarizeBy: none
+		sourceColumn: extraction_day_of_week_name_short
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_day_of_month
+		dataType: int64
+		formatString: 0
+		lineageTag: e09da8ad-8bda-4030-a4d7-2f3b02cd8b90
+		summarizeBy: sum
+		sourceColumn: extraction_day_of_month
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_day_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: a780b89b-d91e-4ab6-94af-64df97f411be
+		summarizeBy: sum
+		sourceColumn: extraction_day_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e75bd2b0-4c43-4795-b8b4-c6e6696b9479
+		summarizeBy: none
+		sourceColumn: extraction_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: a0fadd6a-9a22-4d05-9f94-c9ab2e314e98
+			defaultHierarchy: LocalDateTable_18bcf159-bca1-4f80-a425-e8ae446049a8.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ae3f34de-4e21-43f6-af2d-b1f98c327228
+		summarizeBy: none
+		sourceColumn: extraction_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: 3851505c-3409-43ff-935c-f40130c66905
+			defaultHierarchy: LocalDateTable_66bc1c47-5eac-4096-af13-00ef2f6d8ba6.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b5f5ebfe-1389-4f42-b619-0c8ef076dfdd
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: 265af7ca-7397-4b62-9776-ce13f9c8c071
+			defaultHierarchy: LocalDateTable_dd9a4efa-b25a-4297-a7dd-f9e6b4ab39f1.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0e4f054a-d216-40d3-a2b8-3161dd2d91dc
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: 32e18ac3-a9ad-4013-b3d9-6d6c16c47d95
+			defaultHierarchy: LocalDateTable_4ebb7ad6-e1e5-49ad-897f-aa1820ae2750.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: ca34a3d7-49c9-483b-9aec-de30ccf1151c
+		summarizeBy: sum
+		sourceColumn: extraction_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_iso_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 8d11c97a-aa00-4067-8735-170cd1dadbde
+		summarizeBy: none
+		sourceColumn: extraction_iso_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: 1fb9b45b-5789-4d3d-a2c7-53d283e79531
+			defaultHierarchy: LocalDateTable_e3fbdd43-6e31-443f-b500-b6de5ba82ad3.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_iso_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: eef3e9ff-f633-4ee8-94f8-05f94765ce3e
+		summarizeBy: none
+		sourceColumn: extraction_iso_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: 74a25472-97d0-40a5-b943-93e3fa150b66
+			defaultHierarchy: LocalDateTable_c01c50b4-dd19-4b95-9e14-104199236946.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_iso_week_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c9f05591-5d45-4388-8237-8f57bb11df37
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_iso_week_start_date
+
+		variation Variation
+			isDefault
+			relationship: 50849c33-08a9-491d-8d85-45df1c825749
+			defaultHierarchy: LocalDateTable_e1b111c6-085f-4032-8416-459bf8274b17.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_iso_week_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 67973cf8-5aaa-459e-a163-1b128be0e128
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_iso_week_end_date
+
+		variation Variation
+			isDefault
+			relationship: efbe0738-89c5-4080-b09d-471342891052
+			defaultHierarchy: LocalDateTable_d15c0181-211d-4994-a337-50fc7e237b80.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_iso_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 002a7bfb-f53d-449b-b0d2-906823f301e3
+		summarizeBy: sum
+		sourceColumn: extraction_iso_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_prior_year_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: f6f6b356-7a52-43c9-adf2-4dac84e04d8a
+		summarizeBy: sum
+		sourceColumn: extraction_prior_year_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_prior_year_iso_week_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: cdf5a81b-3281-483f-a4cd-c93f3266d06c
+		summarizeBy: sum
+		sourceColumn: extraction_prior_year_iso_week_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_month_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 374be199-c925-4f8e-86da-e922e7fd9c0b
+		summarizeBy: sum
+		sourceColumn: extraction_month_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_month_name
+		dataType: string
+		lineageTag: 5e0d124f-a7a7-419d-afbe-1934f980660e
+		summarizeBy: none
+		sourceColumn: extraction_month_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_month_name_short
+		dataType: string
+		lineageTag: 5ef19071-e8ad-44ac-aa74-e6cfc2d6e653
+		summarizeBy: none
+		sourceColumn: extraction_month_name_short
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_month_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 70d77026-dca5-41c2-85a5-10c82b14b338
+		summarizeBy: none
+		sourceColumn: extraction_month_start_date
+
+		variation Variation
+			isDefault
+			relationship: a8458fe5-fe00-4dae-931a-3bd9207103e4
+			defaultHierarchy: LocalDateTable_ee4a8943-019a-4885-b0a1-d53ff2389317.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_month_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c36e329c-3d6a-48f1-b15d-f508470b1a47
+		summarizeBy: none
+		sourceColumn: extraction_month_end_date
+
+		variation Variation
+			isDefault
+			relationship: 79344493-9a73-4189-9e70-378d09b1c477
+			defaultHierarchy: LocalDateTable_b3ecc28c-789c-464e-b189-5199ba4d8708.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_month_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1bd336ee-0962-4fd1-8c9d-f64a2323defb
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_month_start_date
+
+		variation Variation
+			isDefault
+			relationship: ec8b9b32-ab5a-465f-8338-b3faac50c1c1
+			defaultHierarchy: LocalDateTable_dd38a7b7-4728-4b58-a8d3-9073c10f8e9d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_prior_year_month_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: abbee48f-ba9d-47d2-9bda-f931038987b9
+		summarizeBy: none
+		sourceColumn: extraction_prior_year_month_end_date
+
+		variation Variation
+			isDefault
+			relationship: 0024fa7e-695e-4aa0-b0bf-877a4e7b7298
+			defaultHierarchy: LocalDateTable_cc1c93c8-55a9-4198-a7f9-7cb00252f275.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_quarter_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 76f4c031-f0ad-49f8-9985-c9a4edcf1422
+		summarizeBy: sum
+		sourceColumn: extraction_quarter_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_quarter_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 68435630-fa1d-4876-b016-5f71bbd45f5c
+		summarizeBy: none
+		sourceColumn: extraction_quarter_start_date
+
+		variation Variation
+			isDefault
+			relationship: 550fa067-62d7-48dd-8c5b-a8aa03f7019a
+			defaultHierarchy: LocalDateTable_0668a175-8aac-4a23-a93f-5fb702e86a0f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_quarter_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 401ec81b-5a03-488b-9ff5-2e72b764ab2e
+		summarizeBy: none
+		sourceColumn: extraction_quarter_end_date
+
+		variation Variation
+			isDefault
+			relationship: ee35ced3-a5d8-4a62-a99a-3016cb14a2b1
+			defaultHierarchy: LocalDateTable_da8e8592-0a69-475f-a9d0-b6ce44101f80.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_year_number
+		dataType: int64
+		formatString: 0
+		lineageTag: 05021f7c-d4b6-496c-b586-0e1c76ee3234
+		summarizeBy: sum
+		sourceColumn: extraction_year_number
+
+		annotation SummarizationSetBy = Automatic
+
+	column extraction_year_start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 33fa1f28-34b7-4b19-9710-3caa785cd8d3
+		summarizeBy: none
+		sourceColumn: extraction_year_start_date
+
+		variation Variation
+			isDefault
+			relationship: e6b33a03-cb89-4789-a9f9-41ee992eef6b
+			defaultHierarchy: LocalDateTable_0d6a4e5b-26cb-4984-9521-8a204b5e8365.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column extraction_year_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 8b26067d-7066-4e4d-a5ff-13ec1abb7659
+		summarizeBy: none
+		sourceColumn: extraction_year_end_date
+
+		variation Variation
+			isDefault
+			relationship: 634f73b7-a571-46f4-9731-568934bd9956
+			defaultHierarchy: LocalDateTable_1ccb5d70-8044-4214-9e9c-546990156f9d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition dim__extraction_date = m
+		mode: import
+		source =
+				let
+				    Source = AmazonAthena.Databases("Amazon Athena", null, []),
+				    AwsDataCatalog_Database = Source{[Name="AwsDataCatalog",Kind="Database"]}[Data],
+				    job_Schema = AwsDataCatalog_Database{[Name="job",Kind="Schema"]}[Data],
+				    dim__extraction_date_Table = job_Schema{[Name="dim__extraction_date",Kind="Table"]}[Data]
+				in
+				    dim__extraction_date_Table
+
+	annotation PBI_ResultType = Table
+
