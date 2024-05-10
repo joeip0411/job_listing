@@ -2,6 +2,15 @@ version: '3'
 
 services:
 
+  postgres:
+    image: postgres:10.4
+    env_file:
+      - .env
+    volumes:
+      - postgres_local:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
   webserver:
     image: airflow:latest
     env_file:
@@ -29,3 +38,6 @@ services:
     volumes:
       - ./dags:/usr/local/airflow/dags
     command: scheduler
+
+volumes:
+  postgres_local:
