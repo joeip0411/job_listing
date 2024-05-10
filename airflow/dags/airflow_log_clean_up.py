@@ -9,9 +9,11 @@ import logging
 import os
 from datetime import timedelta
 
-import airflow
 import jinja2
 import pendulum
+from include.util import task_fail_slack_alert, task_success_slack_alert
+
+import airflow
 from airflow.configuration import conf
 from airflow.models import DAG, Variable
 from airflow.operators.bash import BashOperator
@@ -84,9 +86,11 @@ dag = DAG(
     DAG_ID,
     default_args=default_args,
     schedule=SCHEDULE,
-    tags=['airflow-maintenance'],
+    tags=['airflow','maintenance'],
     template_undefined=jinja2.Undefined,
     catchup=False,
+    on_success_callback=task_success_slack_alert,
+    on_failure_callback=task_fail_slack_alert,
 )
 if hasattr(dag, 'doc_md'):
     dag.doc_md = __doc__

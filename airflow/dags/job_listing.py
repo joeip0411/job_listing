@@ -4,10 +4,6 @@ import time
 
 import pendulum
 import requests
-from airflow import settings
-from airflow.decorators import dag, task
-from airflow.models import Connection
-from airflow.providers.amazon.aws.hooks.emr import EmrHook
 from bs4 import BeautifulSoup
 from cosmos import DbtTaskGroup
 from include.job_listing.constants import (
@@ -32,13 +28,15 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from airflow import settings
+from airflow.decorators import dag, task
+from airflow.models import Connection
+from airflow.providers.amazon.aws.hooks.emr import EmrHook
+
 local_tz = pendulum.timezone("Australia/Sydney")
 
 default_args = {
     'owner': 'engineering',
-    'email': 'some_email@gmail.com',
-    'email_on_failure': True,
-    'email_on_retry': False,
     'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
 }
 

@@ -13,19 +13,20 @@ import logging
 import os
 from datetime import timedelta
 
-import airflow
 import dateutil.parser
 import pendulum
+from include.util import task_fail_slack_alert, task_success_slack_alert
+from sqlalchemy import and_, func
+from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.orm import load_only
+
+import airflow
 from airflow import settings
 from airflow.configuration import conf
 from airflow.jobs.job import Job
 from airflow.models import DAG, DagModel, DagRun, DagTag, Log, SlaMiss, TaskInstance, Variable, XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils import timezone
-from include.util import task_fail_slack_alert, task_success_slack_alert
-from sqlalchemy import and_, func
-from sqlalchemy.exc import ProgrammingError
-from sqlalchemy.orm import load_only
 
 now = timezone.utcnow
 
@@ -209,7 +210,7 @@ dag = DAG(
     DAG_ID,
     default_args=default_args,
     schedule=SCHEDULE,
-    tags=['airflow-maintenance'],
+    tags=['airflow','maintenance'],
     on_success_callback=task_success_slack_alert,
     on_failure_callback=task_fail_slack_alert,
     catchup=False,

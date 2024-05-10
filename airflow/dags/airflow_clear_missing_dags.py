@@ -10,12 +10,13 @@ import os.path
 import socket
 from datetime import timedelta
 
-import airflow
 import pendulum
+from include.util import task_fail_slack_alert, task_success_slack_alert
+
+import airflow
 from airflow import settings
 from airflow.models import DAG, DagModel
 from airflow.operators.python import PythonOperator
-from include.util import task_fail_slack_alert, task_success_slack_alert
 
 local_tz = pendulum.timezone("Australia/Sydney")
 SCHEDULE="25 2 * * *"
@@ -46,7 +47,7 @@ dag = DAG(
     DAG_ID,
     default_args=default_args,
     schedule=SCHEDULE,
-    tags=['airflow-maintenance'],
+    tags=['airflow','maintenance'],
     on_success_callback=task_success_slack_alert,
     on_failure_callback=task_fail_slack_alert,
     catchup=False,
