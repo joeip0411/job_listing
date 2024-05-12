@@ -107,6 +107,7 @@ RUN pip install --user -r requirements.txt --constraint https://raw.githubuserco
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 COPY dags ${AIRFLOW_HOME}/dags
+COPY tests ${AIRFLOW_HOME}/tests
 # COPY plugins ${AIRFLOW_HOME}/plugins
 
 ENV PYTHONPATH ${AIRFLOW_HOME}

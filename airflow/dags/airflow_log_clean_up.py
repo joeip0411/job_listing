@@ -74,9 +74,6 @@ if ENABLE_DELETE_CHILD_LOG.lower() == "true":
 default_args = {
     'owner': DAG_OWNER_NAME,
     'depends_on_past': False,
-    'email': ALERT_EMAIL_ADDRESSES,
-    'email_on_failure': True,
-    'email_on_retry': False,
     'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),

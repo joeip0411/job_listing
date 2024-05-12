@@ -55,6 +55,6 @@ def iceberg_vacuum():
                 wait=True,
             )
 
-    expire_iceberg_snapshots()
+    ops = expire_iceberg_snapshots()
 
-iceberg_vacuum()
+_ = iceberg_vacuum()

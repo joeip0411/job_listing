@@ -35,9 +35,6 @@ ENABLE_DELETE = True
 default_args = {
     'owner': DAG_OWNER_NAME,
     'depends_on_past': False,
-    'email': ALERT_EMAIL_ADDRESSES,
-    'email_on_failure': True,
-    'email_on_retry': False,
     'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
@@ -128,5 +125,4 @@ def clear_missing_dags_fn(**context):
 clear_missing_dags = PythonOperator(
     task_id='clear_missing_dags',
     python_callable=clear_missing_dags_fn,
-    provide_context=True,
     dag=dag)

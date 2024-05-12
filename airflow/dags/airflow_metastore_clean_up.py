@@ -198,9 +198,6 @@ session = settings.Session()
 default_args = {
     'owner': DAG_OWNER_NAME,
     'depends_on_past': False,
-    'email': ALERT_EMAIL_ADDRESSES,
-    'email_on_failure': True,
-    'email_on_retry': False,
     'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
@@ -256,7 +253,6 @@ def print_configuration_function(**context):
 print_configuration = PythonOperator(
     task_id='print_configuration',
     python_callable=print_configuration_function,
-    provide_context=True,
     dag=dag)
 
 

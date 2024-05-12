@@ -286,6 +286,8 @@ def job_listing_processing():
     job_skills = get_skills_from_job_description(job_descriptions)
     emr_details = start_emr_cluster()
 
-    job_listings >> job_descriptions >> job_skills >> emr_details 
+    job_listings >> job_descriptions >> job_skills >> dbt_task_group
+    
     emr_details >> upsert_dbt_conn(master_public_dns=emr_details['master_public_dns']) >> dbt_task_group >> terminate_emr_cluster(cluster_id=emr_details['cluster_id'])
-job_listing_processing()
+    
+_ = job_listing_processing()

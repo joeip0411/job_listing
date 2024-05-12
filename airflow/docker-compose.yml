@@ -19,6 +19,7 @@ services:
     build: .
     volumes:
         - ./dags:/usr/local/airflow/dags
+        - ./tests:/usr/local/airflow/tests
     ports:
         - "8080:8080"
     command: webserver
@@ -37,6 +38,7 @@ services:
       - webserver
     volumes:
       - ./dags:/usr/local/airflow/dags
+      - ./tests:/usr/local/airflow/tests
     command: scheduler
 
 volumes:
