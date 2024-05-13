@@ -8,6 +8,7 @@ from include.util import task_fail_slack_alert, task_success_slack_alert
 from airflow.decorators import dag, task
 
 DAG_OWNER_NAME='operations'
+GLUE_DATABASE=os.getenv('GLUE_DATABASE')
 
 local_tz = pendulum.timezone("Australia/Sydney")
 
@@ -34,24 +35,23 @@ def iceberg_vacuum():
     def expire_iceberg_snapshots():
         """Expring Iceberg table snapshots
         """
-        database='job'
 
         query = f"""
             SELECT 
                 t.table_name
             FROM information_schema.tables t
-            where t.table_schema = '{database}'
+            where t.table_schema = '{GLUE_DATABASE}'
                 and t.table_type = 'BASE TABLE'
         """
         tables = wr.athena.read_sql_query(
             sql=query,
-            database=database,
+            database=GLUE_DATABASE,
         )
 
         for t in tables['table_name']:
             wr.athena.start_query_execution(
                 sql=f"vacuum {t}",
-                database=database,
+                database=GLUE_DATABASE,
                 wait=True,
             )
 

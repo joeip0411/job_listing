@@ -47,22 +47,14 @@ default_args = {
      default_args=default_args,
      on_failure_callback=task_fail_slack_alert,
      on_success_callback=task_success_slack_alert,
-     params={
-         'spark_conf':SPARK_CONF,
-         'catalog':GLUE_CATALOG,
-         'database':GLUE_DATABASE,
-     },
+
 )
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API
     """
 
-    # conf = SPARK_CONF
-    # catalog = GLUE_CATALOG
-    # database = GLUE_DATABASE
-
     @task()
-    def get_job_listing(search_content:str, **context) -> str:
+    def get_job_listing(search_content:str) -> str:
         """Get data engineer job listing from Adzuna API
 
         Args:
@@ -71,12 +63,10 @@ def job_listing_processing():
         Returns:
             str: output table name
         """
-        catalog = context['params']['catalog']
-        database = context['params']['database']
-        table_name = f'{catalog}.{database}.stg__job_listing'
 
-        spark_conf=context['params']['spark_conf']
-        spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
+        table_name = f'{GLUE_CATALOG}.{GLUE_DATABASE}.stg__job_listing'
+
+        spark = SparkSession.builder.config(conf=SPARK_CONF).getOrCreate()
 
         adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
         job_listing = adzuna_hook.get_job_listings(job_title=search_content)
@@ -111,23 +101,20 @@ def job_listing_processing():
         return table_name
     
     @task()
-    def get_job_descriptions_from_listing(input_table:str, **context)-> str:
+    def get_job_descriptions_from_listing(input_table:str)-> str:
         """Get job description for each job
 
         Returns:
             str: output table name
         """
-        spark_conf=context['params']['spark_conf']
-        catalog=context['params']['catalog']
-        database=context['params']['database']
 
-        spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
+        spark = SparkSession.builder.config(conf=SPARK_CONF).getOrCreate()
 
         sdf = spark.sql(f"""
                 select
                     split(redirect_url, '\\\?')[0] as redirect_url
                 from {input_table}
-                where id not in (select id from {catalog}.{database}.brz__job_description);
+                where id not in (select id from {GLUE_CATALOG}.{GLUE_DATABASE}.brz__job_description);
             """)
         
         urls = [str(row.redirect_url) for row in sdf.collect()]
@@ -156,7 +143,7 @@ def job_listing_processing():
         job_desc_df = spark.createDataFrame(job_descriptions, schema=schema)
         job_desc_df = job_desc_df.withColumn('extraction_time_utc', current_timestamp())
 
-        table_name = f'{catalog}.{database}.stg__job_description'
+        table_name = f'{GLUE_CATALOG}.{GLUE_DATABASE}.stg__job_description'
         job_desc_df.write.format('iceberg')\
             .mode('overwrite')\
             .saveAsTable(table_name)
@@ -164,14 +151,14 @@ def job_listing_processing():
         return table_name
 
     @task
-    def get_skills_from_job_description(input_table:str, **context) -> str:
+    def get_skills_from_job_description(input_table:str) -> str:
         """Get technology/skills required for each job
 
         Returns:
             str: output table name
         """
-        spark_conf=context['params']['spark_conf']
-        spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
+
+        spark = SparkSession.builder.config(conf=SPARK_CONF).getOrCreate()
 
         job_description = spark.sql(
             f"""
@@ -191,15 +178,16 @@ def job_listing_processing():
             technologies.append(technology)
 
         job_skills = [(desc[i][0], technologies[i]) for i in range(len(desc))]
-        columns = ['id', 'skill']
 
-        job_skills = spark.createDataFrame(job_skills, columns)
+        schema = StructType([
+            StructField(name="id", dataType=StringType(), nullable=True),
+            StructField(name="skill", dataType=StringType(), nullable=True),
+        ])
+
+        job_skills = spark.createDataFrame(job_skills, schema=schema)
         job_skills = job_skills.withColumn('extraction_time_utc', current_timestamp())
 
-        catalog = context['params']['catalog']
-        database = context['params']['database']
-
-        table_name = f'{catalog}.{database}.stg__job_skills'
+        table_name = f'{GLUE_CATALOG}.{GLUE_DATABASE}.stg__job_skills'
         job_skills.write.format('iceberg')\
             .mode('overwrite')\
             .saveAsTable(table_name)
