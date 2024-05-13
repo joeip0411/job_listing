@@ -55,6 +55,6 @@ def iceberg_optimize():
                 wait=True,
             )
 
-    ops = optimize_iceberg_table()
+    _ = optimize_iceberg_table()
 
 _ = iceberg_optimize()

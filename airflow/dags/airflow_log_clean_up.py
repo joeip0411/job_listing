@@ -13,7 +13,6 @@ import jinja2
 import pendulum
 from include.util import task_fail_slack_alert, task_success_slack_alert
 
-import airflow
 from airflow.configuration import conf
 from airflow.models import DAG, Variable
 from airflow.operators.bash import BashOperator
@@ -25,7 +24,7 @@ SCHEDULE="25 2 * * *"
 DAG_ID = os.path.basename(__file__).replace(".pyc", "").replace(".py", "")
 try:
     BASE_LOG_FOLDER = conf.get("core", "BASE_LOG_FOLDER").rstrip("/")
-except Exception as e:
+except Exception:
     BASE_LOG_FOLDER = conf.get("logging", "BASE_LOG_FOLDER").rstrip("/")
 
 # Who is listed as the owner of this DAG in the Airflow Web Server
@@ -35,7 +34,7 @@ ALERT_EMAIL_ADDRESSES = []
 # Length to retain the log files if not already provided in the conf. If this
 # is set to 30, the job will remove those files that are 30 days old or older
 DEFAULT_MAX_LOG_AGE_IN_DAYS = Variable.get(
-    "airflow_log_cleanup__max_log_age_in_days", 30
+    "airflow_log_cleanup__max_log_age_in_days", 30,
 )
 # Whether the job should delete the logs or not. Included if you want to
 # temporarily avoid deleting the logs
@@ -46,7 +45,7 @@ ENABLE_DELETE = True
 NUMBER_OF_WORKERS = 1
 DIRECTORIES_TO_DELETE = [BASE_LOG_FOLDER]
 ENABLE_DELETE_CHILD_LOG = Variable.get(
-    "airflow_log_cleanup__enable_delete_child_log", "False"
+    "airflow_log_cleanup__enable_delete_child_log", "False",
 )
 LOG_CLEANUP_PROCESS_LOCK_FILE = "/tmp/airflow_log_cleanup_worker.lock"
 logging.info("ENABLE_DELETE_CHILD_LOG  " + ENABLE_DELETE_CHILD_LOG)
@@ -55,20 +54,20 @@ if not BASE_LOG_FOLDER or BASE_LOG_FOLDER.strip() == "":
     raise ValueError(
         "BASE_LOG_FOLDER variable is empty in airflow.cfg. It can be found "
         "under the [core] (<2.0.0) section or [logging] (>=2.0.0) in the cfg file. "
-        "Kindly provide an appropriate directory path."
+        "Kindly provide an appropriate directory path.",
     )
 
 if ENABLE_DELETE_CHILD_LOG.lower() == "true":
     try:
         CHILD_PROCESS_LOG_DIRECTORY = conf.get(
-            "scheduler", "CHILD_PROCESS_LOG_DIRECTORY"
+            "scheduler", "CHILD_PROCESS_LOG_DIRECTORY",
         )
         if CHILD_PROCESS_LOG_DIRECTORY != ' ':
             DIRECTORIES_TO_DELETE.append(CHILD_PROCESS_LOG_DIRECTORY)
     except Exception as e:
         logging.exception(
             "Could not obtain CHILD_PROCESS_LOG_DIRECTORY from " +
-            "Airflow Configurations: " + str(e)
+            "Airflow Configurations: " + str(e),
         )
 
 default_args = {

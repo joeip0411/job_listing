@@ -43,22 +43,26 @@ default_args = {
 @dag(dag_id=os.path.basename(__file__).replace(".pyc", "").replace(".py", ""),
      schedule="0 2 * * *",
      catchup=False,
-     owner_links={'admin':'https://airflow.apache.org'},
      tags=['ELT'],
      default_args=default_args,
      on_failure_callback=task_fail_slack_alert,
      on_success_callback=task_success_slack_alert,
-     )
+     params={
+         'spark_conf':SPARK_CONF,
+         'catalog':GLUE_CATALOG,
+         'database':GLUE_DATABASE,
+     },
+)
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API
     """
 
-    conf = SPARK_CONF
-    catalog = GLUE_CATALOG
-    database = GLUE_DATABASE
+    # conf = SPARK_CONF
+    # catalog = GLUE_CATALOG
+    # database = GLUE_DATABASE
 
     @task()
-    def get_job_listing(search_content:str) -> str:
+    def get_job_listing(search_content:str, **context) -> str:
         """Get data engineer job listing from Adzuna API
 
         Args:
@@ -67,31 +71,34 @@ def job_listing_processing():
         Returns:
             str: output table name
         """
+        catalog = context['params']['catalog']
+        database = context['params']['database']
         table_name = f'{catalog}.{database}.stg__job_listing'
 
-        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+        spark_conf=context['params']['spark_conf']
+        spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
 
         adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
         job_listing = adzuna_hook.get_job_listings(job_title=search_content)
 
         schema = StructType([
-            StructField("description", StringType(), True),
-            StructField("id", StringType(), True),
-            StructField("location", StringType(), True),
-            StructField("redirect_url", StringType(), True),
-            StructField("salary_is_predicted", StringType(), True),
-            StructField("company", StringType(), True),
-            StructField("__CLASS__", StringType(), True),
-            StructField("adref", StringType(), True),
-            StructField("category", StringType(), True),
-            StructField("created", StringType(), True),
-            StructField("title", StringType(), True),
-            StructField("latitude", FloatType(), True),
-            StructField("salary_min", IntegerType(), True),
-            StructField("longitude", FloatType(), True),
-            StructField("contract_time", StringType(), True),
-            StructField("salary_max", IntegerType(), True),
-            StructField("contract_type", StringType(), True),
+            StructField(name="description", dataType=StringType(), nullable=True),
+            StructField(name="id", dataType=StringType(), nullable=True),
+            StructField(name="location", dataType=StringType(), nullable=True),
+            StructField(name="redirect_url", dataType=StringType(), nullable=True),
+            StructField(name="salary_is_predicted", dataType=StringType(), nullable=True),
+            StructField(name="company", dataType=StringType(), nullable=True),
+            StructField(name="__CLASS__", dataType=StringType(), nullable=True),
+            StructField(name="adref", dataType=StringType(), nullable=True),
+            StructField(name="category", dataType=StringType(), nullable=True),
+            StructField(name="created", dataType=StringType(), nullable=True),
+            StructField(name="title", dataType=StringType(), nullable=True),
+            StructField(name="latitude", dataType=FloatType(), nullable=True),
+            StructField(name="salary_min", dataType=IntegerType(), nullable=True),
+            StructField(name="longitude", dataType=FloatType(), nullable=True),
+            StructField(name="contract_time", dataType=StringType(), nullable=True),
+            StructField(name="salary_max", dataType=IntegerType(), nullable=True),
+            StructField(name="contract_type", dataType=StringType(), nullable=True),
         ])
 
         job_listing_df = spark.createDataFrame(job_listing, schema=schema)
@@ -104,14 +111,17 @@ def job_listing_processing():
         return table_name
     
     @task()
-    def get_job_descriptions_from_listing(input_table:str)-> str:
+    def get_job_descriptions_from_listing(input_table:str, **context)-> str:
         """Get job description for each job
 
         Returns:
             str: output table name
         """
+        spark_conf=context['params']['spark_conf']
+        catalog=context['params']['catalog']
+        database=context['params']['database']
 
-        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+        spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
 
         sdf = spark.sql(f"""
                 select
@@ -138,8 +148,8 @@ def job_listing_processing():
             job_descriptions.append(job)
         
         schema = StructType([
-            StructField("id", StringType(), True),
-            StructField("full_description", StringType(), True),
+            StructField(name="id", dataType=StringType(), nullable=True),
+            StructField(name="full_description", dataType=StringType(), nullable=True),
 
         ])
 
@@ -154,13 +164,14 @@ def job_listing_processing():
         return table_name
 
     @task
-    def get_skills_from_job_description(input_table:str) -> str:
+    def get_skills_from_job_description(input_table:str, **context) -> str:
         """Get technology/skills required for each job
 
         Returns:
             str: output table name
         """
-        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+        spark_conf=context['params']['spark_conf']
+        spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
 
         job_description = spark.sql(
             f"""
@@ -184,6 +195,9 @@ def job_listing_processing():
 
         job_skills = spark.createDataFrame(job_skills, columns)
         job_skills = job_skills.withColumn('extraction_time_utc', current_timestamp())
+
+        catalog = context['params']['catalog']
+        database = context['params']['database']
 
         table_name = f'{catalog}.{database}.stg__job_skills'
         job_skills.write.format('iceberg')\

@@ -13,7 +13,6 @@ from datetime import timedelta
 import pendulum
 from include.util import task_fail_slack_alert, task_success_slack_alert
 
-import airflow
 from airflow import settings
 from airflow.models import DAG, DagModel
 from airflow.operators.python import PythonOperator
@@ -56,7 +55,8 @@ if hasattr(dag, 'catchup'):
 
 
 def clear_missing_dags_fn(**context):
-
+    """Delete DAGs from airflow metastore which are not in used anymore
+    """
     logging.info("Starting to run Clear Process")
 
     try:
@@ -88,26 +88,26 @@ def clear_missing_dags_fn(**context):
             logging.info(
                 "After checking DAG '" + str(dag) +
                 "', the fileloc was set to None so assuming the Python " +
-                "definition file DOES NOT exist"
+                "definition file DOES NOT exist",
             )
             entries_to_delete.append(dag)
         elif not os.path.exists(fileloc):
             logging.info(
                 "After checking DAG '" + str(dag) +
-                "', the Python definition file DOES NOT exist: " + fileloc
+                "', the Python definition file DOES NOT exist: " + fileloc,
             )
             entries_to_delete.append(dag)
         else:
             logging.info(
                 "After checking DAG '" + str(dag) +
-                "', the Python definition file does exist: " + fileloc
+                "', the Python definition file does exist: " + fileloc,
             )
 
     logging.info("Process will be Deleting the DAG(s) from the DB:")
     for entry in entries_to_delete:
         logging.info("\tEntry: " + str(entry))
     logging.info(
-        "Process will be Deleting " + str(len(entries_to_delete)) + " DAG(s)"
+        "Process will be Deleting " + str(len(entries_to_delete)) + " DAG(s)",
     )
 
     if ENABLE_DELETE:

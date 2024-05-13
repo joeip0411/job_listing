@@ -20,7 +20,6 @@ from sqlalchemy import and_, func
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import load_only
 
-import airflow
 from airflow import settings
 from airflow.configuration import conf
 from airflow.jobs.job import Job
@@ -219,6 +218,8 @@ if hasattr(dag, 'catchup'):
 
 
 def print_configuration_function(**context):
+    """print DAG configuration in console
+    """
     logging.info("Loading Configurations...")
     dag_run_conf = context.get("dag_run").conf
     logging.info("dag_run.conf: " + str(dag_run_conf))
@@ -257,7 +258,8 @@ print_configuration = PythonOperator(
 
 
 def cleanup_function(**context):
-
+    """Delete relevant database objects in airflow metastore
+    """
     logging.info("Retrieving max_execution_date from XCom")
     max_date = context["ti"].xcom_pull(
         task_ids=print_configuration.task_id, key="max_date",
