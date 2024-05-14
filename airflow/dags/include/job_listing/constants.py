@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from cosmos import ExecutionConfig, ProfileConfig, ProjectConfig, RenderConfig
@@ -5,18 +6,20 @@ from cosmos.constants import TestBehavior
 from cosmos.profiles import SparkThriftProfileMapping
 from pyspark import SparkConf
 
+GLUE_CATALOG = os.getenv('GLUE_CATALOG')
+GLUE_DATABASE = os.getenv('GLUE_DATABASE')
+GLUE_DATABASE_STORAGE_LOCATION = os.getenv('GLUE_DATABASE_STORAGE_LOCATION')
+
 SPARK_CONF=(
     SparkConf()\
         .setAppName("spark_app")\
         .set("spark.jars.packages", "org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.0,org.apache.iceberg:iceberg-aws-bundle:1.5.0")\
         .set("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")\
-        .set("spark.sql.catalog.glue", "org.apache.iceberg.spark.SparkCatalog")\
-        .set("spark.sql.catalog.glue.catalog-impl", "org.apache.iceberg.aws.glue.GlueCatalog")\
-        .set("spark.sql.catalog.glue.warehouse", "s3://joeip-data-engineering-iceberg-test/")\
-        .set("spark.sqk.catalog.glue.io-impl", "org.apache.iceberg.aws.s3.S3FileIO")
+        .set(f"spark.sql.catalog.{GLUE_CATALOG}", "org.apache.iceberg.spark.SparkCatalog")\
+        .set(f"spark.sql.catalog.{GLUE_CATALOG}.catalog-impl", "org.apache.iceberg.aws.glue.GlueCatalog")\
+        .set(f"spark.sql.catalog.{GLUE_CATALOG}.warehouse", GLUE_DATABASE_STORAGE_LOCATION)\
+        .set(f"spark.sqk.catalog.{GLUE_CATALOG}.io-impl", "org.apache.iceberg.aws.s3.S3FileIO")
 )
-GLUE_CATALOG="glue"
-GLUE_DATABASE="job"
 
 EMR_JOB_FLOW_OVERRIDES = {
     "Name": "dbt_spark_cluster",
@@ -51,15 +54,15 @@ EMR_JOB_FLOW_OVERRIDES = {
                     "--conf",
                     "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
                     "--conf",
-                    "spark.sql.defaultCatalog=glue",
+                    f"spark.sql.defaultCatalog={GLUE_CATALOG}",
                     "--conf",
-                    "spark.sql.catalog.glue=org.apache.iceberg.spark.SparkCatalog",
+                    f"spark.sql.catalog.{GLUE_CATALOG}=org.apache.iceberg.spark.SparkCatalog",
                     "--conf",
-                    "spark.sql.catalog.glue.warehouse=s3://joeip-data-engineering-iceberg-test/",
+                    f"spark.sql.catalog.{GLUE_CATALOG}.warehouse={GLUE_DATABASE_STORAGE_LOCATION}",
                     "--conf",
-                    "spark.sql.catalog.glue.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog",
+                    f"spark.sql.catalog.{GLUE_CATALOG}.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog",
                     "--conf",
-                    "spark.sql.catalog.glue.io-impl=org.apache.iceberg.aws.s3.S3FileIO",
+                    f"spark.sql.catalog.{GLUE_CATALOG}.io-impl=org.apache.iceberg.aws.s3.S3FileIO",
                 ],
             },
         },
@@ -83,11 +86,11 @@ EMR_JOB_FLOW_OVERRIDES = {
         {
             "Classification": "spark-defaults",
             "Properties": {
-                "spark.sql.defaultCatalog": "glue",
-                "spark.sqk.catalog.glue.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
-                "spark.sql.catalog.glue": "org.apache.iceberg.spark.SparkCatalog",
-                "spark.sql.catalog.glue.catalog-impl": "org.apache.iceberg.aws.glue.GlueCatalog",
-                "spark.sql.catalog.glue.warehouse": "s3://joeip-data-engineering-iceberg-test/",
+                "spark.sql.defaultCatalog": GLUE_CATALOG,
+                f"spark.sqk.catalog.{GLUE_CATALOG}.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
+                f"spark.sql.catalog.{GLUE_CATALOG}": "org.apache.iceberg.spark.SparkCatalog",
+                f"spark.sql.catalog.{GLUE_CATALOG}.catalog-impl": "org.apache.iceberg.aws.glue.GlueCatalog",
+                f"spark.sql.catalog.{GLUE_CATALOG}.warehouse": GLUE_DATABASE_STORAGE_LOCATION,
                 "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
             },
         },
@@ -99,11 +102,11 @@ DBT_ROOT_PATH = Path(__file__).parent.parent.parent / "dbt"
 DBT_PROJECT_CONFIG = ProjectConfig(dbt_project_path= DBT_ROOT_PATH / DBT_PROJECT_NAME)
 DBT_PROFILE_CONFIG = ProfileConfig(
     profile_name="default",
-    target_name="dev",
+    target_name=os.getenv('ENV'),
     profile_mapping=SparkThriftProfileMapping(
         conn_id="dbt_conn",
         profile_args={"user": "hadoop",
-                        "schema": "job",
+                        "schema": GLUE_DATABASE,
                         "threads": 4},
     ),
 )

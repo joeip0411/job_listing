@@ -6,12 +6,10 @@ from airflow.utils.state import State
 ICON_URL = 'https://raw.githubusercontent.com/apache/airflow/main/airflow/www/static/pin_100.png'
 
 def task_fail_slack_alert(context):
+    """Slack notification on task failure
+    """
     tis_dagrun = context['ti'].get_dagrun().get_task_instances()
-    failed_tasks = []
-    for ti in tis_dagrun:
-        if ti.state == State.FAILED:
-            # Adding log url
-            failed_tasks.append(f"<{ti.log_url}|{ti.task_id}>")
+    failed_tasks = [f"<{ti.log_url}|{ti.task_id}>" for ti in tis_dagrun if ti.sttate == State.FAILED]
     
     dag=context.get('task_instance').dag_id
     exec_date=context.get('execution_date')
@@ -56,13 +54,8 @@ def task_fail_slack_alert(context):
 
 
 def task_success_slack_alert(context):
-    tis_dagrun = context['ti'].get_dagrun().get_task_instances()
-    failed_tasks = []
-    for ti in tis_dagrun:
-        if ti.state == State.SUCCESS:
-            # Adding log url
-            failed_tasks.append(f"<{ti.log_url}|{ti.task_id}>")
-    
+    """Slack notification on DAG run success
+    """
     dag=context.get('task_instance').dag_id
     exec_date=context.get('execution_date')
 

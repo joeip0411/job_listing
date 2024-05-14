@@ -4,10 +4,6 @@ import time
 
 import pendulum
 import requests
-from airflow import settings
-from airflow.decorators import dag, task
-from airflow.models import Connection
-from airflow.providers.amazon.aws.hooks.emr import EmrHook
 from bs4 import BeautifulSoup
 from cosmos import DbtTaskGroup
 from include.job_listing.constants import (
@@ -32,32 +28,30 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from airflow import settings
+from airflow.decorators import dag, task
+from airflow.models import Connection
+from airflow.providers.amazon.aws.hooks.emr import EmrHook
+
 local_tz = pendulum.timezone("Australia/Sydney")
 
 default_args = {
     'owner': 'engineering',
-    'email': 'some_email@gmail.com',
-    'email_on_failure': True,
-    'email_on_retry': False,
     'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
 }
 
 @dag(dag_id=os.path.basename(__file__).replace(".pyc", "").replace(".py", ""),
      schedule="0 2 * * *",
      catchup=False,
-     owner_links={'admin':'https://airflow.apache.org'},
      tags=['ELT'],
      default_args=default_args,
      on_failure_callback=task_fail_slack_alert,
      on_success_callback=task_success_slack_alert,
-     )
+
+)
 def job_listing_processing():
     """ELT pipeline for sourcing data engineer job listings from Adzuna API
     """
-
-    conf = SPARK_CONF
-    catalog = GLUE_CATALOG
-    database = GLUE_DATABASE
 
     @task()
     def get_job_listing(search_content:str) -> str:
@@ -69,31 +63,32 @@ def job_listing_processing():
         Returns:
             str: output table name
         """
-        table_name = f'{catalog}.{database}.stg__job_listing'
 
-        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+        table_name = f'{GLUE_CATALOG}.{GLUE_DATABASE}.stg__job_listing'
+
+        spark = SparkSession.builder.config(conf=SPARK_CONF).getOrCreate()
 
         adzuna_hook = AdzunaHook(conn_id = 'adzuna_conn')
         job_listing = adzuna_hook.get_job_listings(job_title=search_content)
 
         schema = StructType([
-            StructField("description", StringType(), True),
-            StructField("id", StringType(), True),
-            StructField("location", StringType(), True),
-            StructField("redirect_url", StringType(), True),
-            StructField("salary_is_predicted", StringType(), True),
-            StructField("company", StringType(), True),
-            StructField("__CLASS__", StringType(), True),
-            StructField("adref", StringType(), True),
-            StructField("category", StringType(), True),
-            StructField("created", StringType(), True),
-            StructField("title", StringType(), True),
-            StructField("latitude", FloatType(), True),
-            StructField("salary_min", IntegerType(), True),
-            StructField("longitude", FloatType(), True),
-            StructField("contract_time", StringType(), True),
-            StructField("salary_max", IntegerType(), True),
-            StructField("contract_type", StringType(), True),
+            StructField(name="description", dataType=StringType(), nullable=True),
+            StructField(name="id", dataType=StringType(), nullable=True),
+            StructField(name="location", dataType=StringType(), nullable=True),
+            StructField(name="redirect_url", dataType=StringType(), nullable=True),
+            StructField(name="salary_is_predicted", dataType=StringType(), nullable=True),
+            StructField(name="company", dataType=StringType(), nullable=True),
+            StructField(name="__CLASS__", dataType=StringType(), nullable=True),
+            StructField(name="adref", dataType=StringType(), nullable=True),
+            StructField(name="category", dataType=StringType(), nullable=True),
+            StructField(name="created", dataType=StringType(), nullable=True),
+            StructField(name="title", dataType=StringType(), nullable=True),
+            StructField(name="latitude", dataType=FloatType(), nullable=True),
+            StructField(name="salary_min", dataType=IntegerType(), nullable=True),
+            StructField(name="longitude", dataType=FloatType(), nullable=True),
+            StructField(name="contract_time", dataType=StringType(), nullable=True),
+            StructField(name="salary_max", dataType=IntegerType(), nullable=True),
+            StructField(name="contract_type", dataType=StringType(), nullable=True),
         ])
 
         job_listing_df = spark.createDataFrame(job_listing, schema=schema)
@@ -113,13 +108,13 @@ def job_listing_processing():
             str: output table name
         """
 
-        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+        spark = SparkSession.builder.config(conf=SPARK_CONF).getOrCreate()
 
         sdf = spark.sql(f"""
                 select
                     split(redirect_url, '\\\?')[0] as redirect_url
                 from {input_table}
-                where id not in (select id from {catalog}.{database}.brz__job_description);
+                where id not in (select id from {GLUE_CATALOG}.{GLUE_DATABASE}.brz__job_description);
             """)
         
         urls = [str(row.redirect_url) for row in sdf.collect()]
@@ -140,15 +135,15 @@ def job_listing_processing():
             job_descriptions.append(job)
         
         schema = StructType([
-            StructField("id", StringType(), True),
-            StructField("full_description", StringType(), True),
+            StructField(name="id", dataType=StringType(), nullable=True),
+            StructField(name="full_description", dataType=StringType(), nullable=True),
 
         ])
 
         job_desc_df = spark.createDataFrame(job_descriptions, schema=schema)
         job_desc_df = job_desc_df.withColumn('extraction_time_utc', current_timestamp())
 
-        table_name = f'{catalog}.{database}.stg__job_description'
+        table_name = f'{GLUE_CATALOG}.{GLUE_DATABASE}.stg__job_description'
         job_desc_df.write.format('iceberg')\
             .mode('overwrite')\
             .saveAsTable(table_name)
@@ -162,7 +157,8 @@ def job_listing_processing():
         Returns:
             str: output table name
         """
-        spark = SparkSession.builder.config(conf=conf).getOrCreate()
+
+        spark = SparkSession.builder.config(conf=SPARK_CONF).getOrCreate()
 
         job_description = spark.sql(
             f"""
@@ -182,12 +178,16 @@ def job_listing_processing():
             technologies.append(technology)
 
         job_skills = [(desc[i][0], technologies[i]) for i in range(len(desc))]
-        columns = ['id', 'skill']
 
-        job_skills = spark.createDataFrame(job_skills, columns)
+        schema = StructType([
+            StructField(name="id", dataType=StringType(), nullable=True),
+            StructField(name="skill", dataType=StringType(), nullable=True),
+        ])
+
+        job_skills = spark.createDataFrame(job_skills, schema=schema)
         job_skills = job_skills.withColumn('extraction_time_utc', current_timestamp())
 
-        table_name = f'{catalog}.{database}.stg__job_skills'
+        table_name = f'{GLUE_CATALOG}.{GLUE_DATABASE}.stg__job_skills'
         job_skills.write.format('iceberg')\
             .mode('overwrite')\
             .saveAsTable(table_name)
@@ -288,6 +288,8 @@ def job_listing_processing():
     job_skills = get_skills_from_job_description(job_descriptions)
     emr_details = start_emr_cluster()
 
-    job_listings >> job_descriptions >> job_skills >> emr_details 
+    job_listings >> job_descriptions >> job_skills >> dbt_task_group
+    
     emr_details >> upsert_dbt_conn(master_public_dns=emr_details['master_public_dns']) >> dbt_task_group >> terminate_emr_cluster(cluster_id=emr_details['cluster_id'])
-job_listing_processing()
+    
+_ = job_listing_processing()

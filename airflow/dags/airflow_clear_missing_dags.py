@@ -10,12 +10,12 @@ import os.path
 import socket
 from datetime import timedelta
 
-import airflow
 import pendulum
+from include.util import task_fail_slack_alert, task_success_slack_alert
+
 from airflow import settings
 from airflow.models import DAG, DagModel
 from airflow.operators.python import PythonOperator
-from include.util import task_fail_slack_alert, task_success_slack_alert
 
 local_tz = pendulum.timezone("Australia/Sydney")
 SCHEDULE="25 2 * * *"
@@ -34,9 +34,6 @@ ENABLE_DELETE = True
 default_args = {
     'owner': DAG_OWNER_NAME,
     'depends_on_past': False,
-    'email': ALERT_EMAIL_ADDRESSES,
-    'email_on_failure': True,
-    'email_on_retry': False,
     'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
@@ -46,7 +43,7 @@ dag = DAG(
     DAG_ID,
     default_args=default_args,
     schedule=SCHEDULE,
-    tags=['airflow-maintenance'],
+    tags=['airflow','maintenance'],
     on_success_callback=task_success_slack_alert,
     on_failure_callback=task_fail_slack_alert,
     catchup=False,
@@ -58,7 +55,8 @@ if hasattr(dag, 'catchup'):
 
 
 def clear_missing_dags_fn(**context):
-
+    """Delete DAGs from airflow metastore which are not in used anymore
+    """
     logging.info("Starting to run Clear Process")
 
     try:
@@ -90,26 +88,26 @@ def clear_missing_dags_fn(**context):
             logging.info(
                 "After checking DAG '" + str(dag) +
                 "', the fileloc was set to None so assuming the Python " +
-                "definition file DOES NOT exist"
+                "definition file DOES NOT exist",
             )
             entries_to_delete.append(dag)
         elif not os.path.exists(fileloc):
             logging.info(
                 "After checking DAG '" + str(dag) +
-                "', the Python definition file DOES NOT exist: " + fileloc
+                "', the Python definition file DOES NOT exist: " + fileloc,
             )
             entries_to_delete.append(dag)
         else:
             logging.info(
                 "After checking DAG '" + str(dag) +
-                "', the Python definition file does exist: " + fileloc
+                "', the Python definition file does exist: " + fileloc,
             )
 
     logging.info("Process will be Deleting the DAG(s) from the DB:")
     for entry in entries_to_delete:
         logging.info("\tEntry: " + str(entry))
     logging.info(
-        "Process will be Deleting " + str(len(entries_to_delete)) + " DAG(s)"
+        "Process will be Deleting " + str(len(entries_to_delete)) + " DAG(s)",
     )
 
     if ENABLE_DELETE:
@@ -127,5 +125,4 @@ def clear_missing_dags_fn(**context):
 clear_missing_dags = PythonOperator(
     task_id='clear_missing_dags',
     python_callable=clear_missing_dags_fn,
-    provide_context=True,
     dag=dag)

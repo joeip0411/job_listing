@@ -13,19 +13,19 @@ import logging
 import os
 from datetime import timedelta
 
-import airflow
 import dateutil.parser
 import pendulum
+from include.util import task_fail_slack_alert, task_success_slack_alert
+from sqlalchemy import and_, func
+from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.orm import load_only
+
 from airflow import settings
 from airflow.configuration import conf
 from airflow.jobs.job import Job
 from airflow.models import DAG, DagModel, DagRun, DagTag, Log, SlaMiss, TaskInstance, Variable, XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils import timezone
-from include.util import task_fail_slack_alert, task_success_slack_alert
-from sqlalchemy import and_, func
-from sqlalchemy.exc import ProgrammingError
-from sqlalchemy.orm import load_only
 
 now = timezone.utcnow
 
@@ -197,9 +197,6 @@ session = settings.Session()
 default_args = {
     'owner': DAG_OWNER_NAME,
     'depends_on_past': False,
-    'email': ALERT_EMAIL_ADDRESSES,
-    'email_on_failure': True,
-    'email_on_retry': False,
     'start_date': pendulum.datetime(2024,4,8, tz=local_tz),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
@@ -209,7 +206,7 @@ dag = DAG(
     DAG_ID,
     default_args=default_args,
     schedule=SCHEDULE,
-    tags=['airflow-maintenance'],
+    tags=['airflow','maintenance'],
     on_success_callback=task_success_slack_alert,
     on_failure_callback=task_fail_slack_alert,
     catchup=False,
@@ -221,6 +218,8 @@ if hasattr(dag, 'catchup'):
 
 
 def print_configuration_function(**context):
+    """print DAG configuration in console
+    """
     logging.info("Loading Configurations...")
     dag_run_conf = context.get("dag_run").conf
     logging.info("dag_run.conf: " + str(dag_run_conf))
@@ -255,12 +254,12 @@ def print_configuration_function(**context):
 print_configuration = PythonOperator(
     task_id='print_configuration',
     python_callable=print_configuration_function,
-    provide_context=True,
     dag=dag)
 
 
 def cleanup_function(**context):
-
+    """Delete relevant database objects in airflow metastore
+    """
     logging.info("Retrieving max_execution_date from XCom")
     max_date = context["ti"].xcom_pull(
         task_ids=print_configuration.task_id, key="max_date",
