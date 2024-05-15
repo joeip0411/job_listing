@@ -20,7 +20,7 @@ env:
 jobs:
   build_test:
     environment: dev
-    name: Build Image
+    name: Build and test image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -86,8 +86,18 @@ jobs:
       - name: Run job_listing DAG
         run: |
           docker exec airflow_webserver_1 airflow dags unpause job_listing
-          docker exec airflow_webserver_1 airflow dags trigger job_listing
-
+          sleep 10
+          job_listing_dag_run_status=''
+          while ["$job_listing_dag_run_status" != "success" && "$job_listing_dag_run_status" != "failure"]; do
+            job_listing_dag_run_status=$(airflow dags list-runs -d job_listing | grep -oE 'failed|success')
+            sleep 60
+          echo "job_listing DAG run "$dag_run_status
+          if ["$job_listing_dag_run_status" == "failure"]; then
+            exit 1
       - name: Stop airflow containers
         run: |
           docker-compose -f "airflow/docker-compose.yml" down
+
+      - name: set Docker directory permission for cache
+        run: |
+          sudo chmod -R 777 /var/lib/docker
