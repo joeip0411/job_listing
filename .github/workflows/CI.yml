@@ -48,6 +48,10 @@ jobs:
           echo  GLUE_DATABASE_STORAGE_LOCATION=${{ secrets.GLUE_DATABASE_STORAGE_LOCATION }} >> airflow/.env
           cat airflow/.env
 
+      - name: set Docker directory permission for cache
+        run: |
+          chmod -R 777 /var/lib/docker
+
       - name: Cache image layers
         uses: actions/cache@v4
         with:
