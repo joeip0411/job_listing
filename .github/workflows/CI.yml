@@ -29,23 +29,24 @@ jobs:
       - name: Set up .env file
         run: |
           touch airflow/.env
-          echo  AIRFLOW_BASE_URL=${AIRFLOW_BASE_URL} > .env
-          echo  AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} > .env
-          echo  AWS_REGION=${AWS_REGION} > .env
-          echo  ENABLE_REMOTE_LOGGING=${ENABLE_REMOTE_LOGGING} > .env
-          echo  AWS_REGION=${AWS_REGION} > .env
-          echo  ENV=${ENV} > .env
-          echo  POSTGRES_DB=${POSTGRES_DB} > .env
-          echo  POSTGRES_HOST=${POSTGRES_HOST} > .env
-          echo  POSTGRES_PORT=${POSTGRES_PORT} > .env
-          echo  POSTGRES_USER=${POSTGRES_USER} > .env
-          echo  GLUE_CATALOG=${GLUE_CATALOG} > .env
-          echo  GLUE_DATABASE=${GLUE_DATABASE} > .env
-          echo  STAGE=${STAGE} > .env
+          echo  AIRFLOW_BASE_URL=${{ env.AIRFLOW_BASE_URL }} > .env
+          echo  AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} > .env
+          echo  AWS_REGION=${{ env.AWS_REGION }} > .env
+          echo  ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING }} > .env
+          echo  AWS_REGION=${{ env.AWS_REGION }} > .env
+          echo  ENV=${{ env.ENV }} > .env
+          echo  POSTGRES_DB=${{ env.POSTGRES_DB }} > .env
+          echo  POSTGRES_HOST=${{ env.POSTGRES_HOST }} > .env
+          echo  POSTGRES_PORT=${{ env.POSTGRES_PORT }} > .env
+          echo  POSTGRES_USER=${{ env.POSTGRES_USER }} > .env
+          echo  GLUE_CATALOG=${{ env.GLUE_CATALOG }} > .env
+          echo  GLUE_DATABASE=${{ env.GLUE_DATABASE }} > .env
+          echo  STAGE=${{ env.STAGE }} > .env
           echo  AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} > .env
           echo  AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} > .env
           echo  FERNET_KEY=${{ secrets.FERNET_KEY }} > .env
           echo  GLUE_DATABASE_STORAGE_LOCATION=${{ secrets.GLUE_DATABASE_STORAGE_LOCATION }} > .env
+          cat airflow/.env
 
       - name: Cache image layers
         uses: actions/cache@v4
