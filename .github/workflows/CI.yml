@@ -94,7 +94,7 @@ jobs:
           echo d
           while [ "$job_listing_dag_run_status" != "success" -a "$job_listing_dag_run_status" != "failure" ]; do
             echo e
-            docker exec airflow_webserver_1 airflow dags list-runs -d job_listing
+            docker exec airflow_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'failed|success'
             echo f
             job_listing_dag_run_status=$(docker exec airflow_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'failed|success')
             echo g
