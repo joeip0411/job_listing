@@ -90,19 +90,16 @@ jobs:
           echo b
           sleep 10
           echo c
-          job_listing_dag_run_status=''
+          job_listing_dag_run_status='queued'
           echo d
-          while [ "$job_listing_dag_run_status" != "success" -a "$job_listing_dag_run_status" != "failure" ]; do
-            echo e
-            docker exec airflow_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'failed|success'
-            echo f
-            job_listing_dag_run_status=$(docker exec airflow_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'failed|success')
+          while [ "$job_listing_dag_run_status" == "running" -o "$job_listing_dag_run_status" == "queued" ]; do
+            job_listing_dag_run_status=$(docker exec airflow_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'running|queued|success|failed')
             echo g
             echo "running job_listing"
             sleep 60
           done
           echo "job_listing DAG run "$dag_run_status
-          if [ "$job_listing_dag_run_status" == "failure" ]; then
+          if [ "$job_listing_dag_run_status" == "failed" ]; then
             exit 1
           fi
       - name: Stop airflow containers
