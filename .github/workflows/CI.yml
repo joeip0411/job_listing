@@ -1,0 +1,80 @@
+name: CI
+
+on:
+	pull_request
+	workflow_dispatch
+	push
+
+env:
+	AIRFLOW_BASE_URL: http://localhost:8080
+	AWS_DEFAULT_REGION: ap-southeast-2
+	AWS_REGION: ap-southeast-2
+	ENABLE_REMOTE_LOGGING: False
+	ENV: dev
+	POSTGRES_DB: airflow
+	POSTGRES_HOST: postgres
+	POSTGRES_PASSWORD: airflow
+	POSTGRES_PORT: 5432
+	POSTGRES_USER: airflow
+	GLUE_CATALOG: glue
+	GLUE_DATABASE: job
+	STAGE: dev        
+	
+jobs:
+	build_test:
+		environment: dev
+		name: Build Image
+		runs_on: ubuntu-latest
+		steps:
+	    - name: Checkout code
+	      uses: actions/checkout@v4
+	      
+	    - name: Set up .env file
+		    run: |
+			    touch airflow/.env
+			    echo  AIRFLOW_BASE_URL=${AIRFLOW_BASE_URL} > .env
+			    echo  AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} > .env
+			    echo  AWS_REGION=${AWS_REGION} > .env
+			    echo  ENABLE_REMOTE_LOGGING=${ENABLE_REMOTE_LOGGING} > .env
+			    echo  AWS_REGION=${AWS_REGION} > .env
+			    echo  ENV=${ENV} > .env
+			    echo  POSTGRES_DB=${POSTGRES_DB} > .env
+			    echo  POSTGRES_HOST=${POSTGRES_HOST} > .env
+			    echo  POSTGRES_PORT=${POSTGRES_PORT} > .env
+			    echo  POSTGRES_USER=${POSTGRES_USER} > .env
+			    echo  GLUE_CATALOG=${GLUE_CATALOG} > .env
+			    echo  GLUE_DATABASE=${GLUE_DATABASE} > .env
+			    echo  STAGE=${STAGE} > .env
+			    echo  AWS_ACCESS_KEY_ID=${secrets.AWS_ACCESS_KEY_ID} > .env
+			    echo  AWS_SECRET_ACCESS_KEY=${secrets.AWS_SECRET_ACCESS_KEY} > .env
+			    echo  FERNET_KEY=${secrets.FERNET_KEY} > .env
+			    echo  GLUE_DATABASE_STORAGE_LOCATION=${secrets.GLUE_DATABASE_STORAGE_LOCATION} > .env
+		      
+	    - name: Cache image layers
+		    uses: actions/cache@v4
+	      with:
+	        path: /var/lib/docker
+	        key: docker-${{ hashFiles('**/Dockerfile') }}-${{ hashFiles('**/*.py') }}-${{ hashFiles('**/*.sql') }}
+	        
+		  - name: Build image and start airflow containers
+			  run: |
+				  docker-compose -f "airflow/docker-compose.yml" up -d --build
+			
+			- name: Wait for airflow webserver to be healthy
+				run: |
+					HEALTH=""
+					while [ "$HEALTH" != "healthy" ]; do
+					    HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow-webserver-1
+					    if [ "$HEALTH" != "healthy" ]; then\
+						    echo "Waiting for airflow webserver to become healthy..."
+						    sleep 5
+					    fi
+					done
+				  
+			- name: Run DAG validation and definition tests
+				run: |
+					docker exec airflow-webserver-1 python3 -m pytest -vv tests/ 
+			
+			- name: Stop airflow containers
+				run: |
+					docker-compose -f "airflow/docker-compose.yml" down 
