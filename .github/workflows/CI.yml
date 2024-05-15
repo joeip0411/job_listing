@@ -3,19 +3,19 @@ name: CI
 on: [pull_request, workflow_dispatch, push]
 
 env:
-	AIRFLOW_BASE_URL: http://localhost:8080
-	AWS_DEFAULT_REGION: ap-southeast-2
-	AWS_REGION: ap-southeast-2
-	ENABLE_REMOTE_LOGGING: False
-	ENV: dev
-	POSTGRES_DB: airflow
-	POSTGRES_HOST: postgres
-	POSTGRES_PASSWORD: airflow
-	POSTGRES_PORT: 5432
-	POSTGRES_USER: airflow
-	GLUE_CATALOG: glue
-	GLUE_DATABASE: job
-	STAGE: dev        
+	AIRFLOW_BASE_URL: 'http://localhost:8080'
+	AWS_DEFAULT_REGION: 'ap-southeast-2'
+	AWS_REGION: 'ap-southeast-2'
+	ENABLE_REMOTE_LOGGING: 'False'
+	ENV: 'dev'
+	POSTGRES_DB: 'airflow'
+	POSTGRES_HOST: 'postgres'
+	POSTGRES_PASSWORD: 'airflow'
+	POSTGRES_PORT: '5432'
+	POSTGRES_USER: 'airflow'
+	GLUE_CATALOG: 'glue'
+	GLUE_DATABASE: 'job'
+	STAGE: 'dev'       
 	
 jobs:
 	build_test:
