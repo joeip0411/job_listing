@@ -42,10 +42,10 @@ jobs:
           echo  GLUE_CATALOG=${GLUE_CATALOG} > .env
           echo  GLUE_DATABASE=${GLUE_DATABASE} > .env
           echo  STAGE=${STAGE} > .env
-          echo  AWS_ACCESS_KEY_ID=${secrets.AWS_ACCESS_KEY_ID} > .env
-          echo  AWS_SECRET_ACCESS_KEY=${secrets.AWS_SECRET_ACCESS_KEY} > .env
-          echo  FERNET_KEY=${secrets.FERNET_KEY} > .env
-          echo  GLUE_DATABASE_STORAGE_LOCATION=${secrets.GLUE_DATABASE_STORAGE_LOCATION} > .env
+          echo  AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} > .env
+          echo  AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} > .env
+          echo  FERNET_KEY=${{ secrets.FERNET_KEY }} > .env
+          echo  GLUE_DATABASE_STORAGE_LOCATION=${{ secrets.GLUE_DATABASE_STORAGE_LOCATION }} > .env
 
       - name: Cache image layers
         uses: actions/cache@v4
