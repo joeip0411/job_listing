@@ -6,6 +6,7 @@ env:
   AIRFLOW_BASE_URL: "http://localhost:8080"
   AWS_DEFAULT_REGION: "ap-southeast-2"
   AWS_REGION: "ap-southeast-2"
+  EMR_MASTER_SECURITY_GROUP_ID: "sg-0cb660a18340f7dd3"
   ENABLE_REMOTE_LOGGING: "False"
   ENV: "dev"
   POSTGRES_DB: "airflow"
@@ -32,8 +33,8 @@ jobs:
           echo  AIRFLOW_BASE_URL=${{ env.AIRFLOW_BASE_URL }} >> airflow/.env
           echo  AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} >> airflow/.env
           echo  AWS_REGION=${{ env.AWS_REGION }} >> airflow/.env
+          echo  EMR_MASTER_SECURITY_GROUP_ID${{ env.EMR_MASTER_SECURITY_GROUP_ID }} >> airflow/.env
           echo  ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING }} >> airflow/.env
-          echo  AWS_REGION=${{ env.AWS_REGION }} >> airflow/.env
           echo  ENV=${{ env.ENV }} >> airflow/.env
           echo  POSTGRES_DB=${{ env.POSTGRES_DB }} >> airflow/.env
           echo  POSTGRES_HOST=${{ env.POSTGRES_HOST }} >> airflow/.env
@@ -79,6 +80,11 @@ jobs:
           docker exec airflow_webserver_1 airflow connections add 'openai_conn'  --conn-json '{"conn_type": "http", "password":"${{ secrets.OPENAI_CONN_PASSWORD }}"}'
           docker exec airflow_webserver_1 airflow connections add 'slack_conn' --conn-json '{"conn_type": "slack", "password":"${{ secrets.SLACK_CONN_PASSWORD }}"}'
 
+      - name: Grant host machine access to EMR cluster
+        run: |
+          ip=$(ifconfig.me)
+          docker exec airflow_webserver_1 sh -c "cd CI && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
+
       - name: Run DAG validation and definition tests
         run: |
           docker exec airflow_webserver_1 python3 -m pytest -vv tests/
@@ -102,6 +108,11 @@ jobs:
       - name: Stop airflow containers
         run: |
           docker-compose -f "airflow/docker-compose.yml" down
+
+      - name: Revoke host machine access to EMR cluster
+        run: |
+          ip=$(ifconfig.me)
+          docker exec airflow_webserver_1 sh -c "cd CI && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
 
       - name: set Docker directory permission for cache
         run: |
