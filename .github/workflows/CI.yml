@@ -82,7 +82,8 @@ jobs:
 
       - name: Grant host machine access to EMR cluster
         run: |
-          ip=$(ifconfig.me)
+          ip=$(curl ifconfig.me)
+          echo $ip
           docker exec airflow_webserver_1 sh -c "cd CI && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
 
       - name: Run DAG validation and definition tests
