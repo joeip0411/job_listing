@@ -87,18 +87,15 @@ jobs:
         run: |
           docker exec airflow_webserver_1 airflow dags unpause job_listing
           sleep 10
-
           job_listing_dag_run_status=''
-          while [ "$job_listing_dag_run_status" != "success" ] && [ "$job_listing_dag_run_status" != "failure" ]; do
+          while [ "$job_listing_dag_run_status" != "success" -a "$job_listing_dag_run_status" != "failure" ]; do
             echo 1
             job_listing_dag_run_status=$(docker exec airflow_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'failed|success')
             echo 2
             echo "running job_listing"
             sleep 60
           done
-
           echo "job_listing DAG run "$dag_run_status
-
           if [ "$job_listing_dag_run_status" == "failure" ]; then
             exit 1
           fi
