@@ -81,7 +81,12 @@ jobs:
 
       - name: Run DAG validation and definition tests
         run: |
-          docker exec airflow_webserver_1 python3 -m pytest -vv tests/ 
+          docker exec airflow_webserver_1 python3 -m pytest -vv tests/
+
+      - name: Run job_listing DAG
+        run: |
+          docker exec airflow_webserver_1 airflow dags unpause job_listing
+          docker exec airflow_webserver_1 airflow dags trigger job_listing
 
       - name: Stop airflow containers
         run: |
