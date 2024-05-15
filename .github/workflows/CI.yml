@@ -16,7 +16,7 @@ env:
   GLUE_CATALOG: "glue"
   GLUE_DATABASE: "job"
   STAGE: "dev"       
-	
+
 jobs:
   build_test:
     environment: dev
@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-	      
+
       - name: Set up .env file
         run: |
           touch airflow/.env
@@ -46,17 +46,17 @@ jobs:
           echo  AWS_SECRET_ACCESS_KEY=${secrets.AWS_SECRET_ACCESS_KEY} > .env
           echo  FERNET_KEY=${secrets.FERNET_KEY} > .env
           echo  GLUE_DATABASE_STORAGE_LOCATION=${secrets.GLUE_DATABASE_STORAGE_LOCATION} > .env
-		      
+
       - name: Cache image layers
         uses: actions/cache@v4
         with:
           path: /var/lib/docker
           key: docker-${{ hashFiles('**/Dockerfile') }}-${{ hashFiles('**/*.py') }}-${{ hashFiles('**/*.sql') }}
-	        
+
       - name: Build image and start airflow containers
         run: |
           docker-compose -f "airflow/docker-compose.yml" up -d --build
-			
+
       - name: Wait for airflow webserver to be healthy
         run: |
           HEALTH=""
@@ -67,11 +67,11 @@ jobs:
               sleep 5
             fi
           done
-				  
+
       - name: Run DAG validation and definition tests
         run: |
           docker exec airflow-webserver-1 python3 -m pytest -vv tests/ 
-			
+
       - name: Stop airflow containers
         run: |
-          docker-compose -f "airflow/docker-compose.yml" down 
+          docker-compose -f "airflow/docker-compose.yml" down
