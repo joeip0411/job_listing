@@ -55,7 +55,7 @@ jobs:
 
       - name: Build image and start airflow containers
         run: |
-          docker-compose -f "airflow/docker-compose.yml" up -d --build
+          docker-compose -f "airflow/docker-compose.yml" up --build
 
       - name: Wait for airflow webserver to be healthy
         run: |
@@ -64,7 +64,6 @@ jobs:
             HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow_webserver_1)
             if [ "$HEALTH" != "healthy" ]; then\
               echo "Waiting for airflow webserver to become healthy..."
-              docker ps
               sleep 5
             fi
           done
