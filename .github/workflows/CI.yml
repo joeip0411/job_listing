@@ -61,7 +61,7 @@ jobs:
         run: |
           HEALTH=""
           while [ "$HEALTH" != "healthy" ]; do
-            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow-webserver-1
+            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow-webserver-1)
             if [ "$HEALTH" != "healthy" ]; then\
               echo "Waiting for airflow webserver to become healthy..."
               sleep 5
