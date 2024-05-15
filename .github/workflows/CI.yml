@@ -70,10 +70,10 @@ jobs:
           done
       - name: Set up airflow connections
         run: |
-          airflow connections add 'adzuna_conn' --conn-json '{"conn_type": "http", "extra": {"application_id": "${{ secrets.ADZUNA_CONN_APPLICATION_ID }}", "application_password": "${{ secrets.ADZUNA_CONN_APPLICATION_PASSWORD }}"}}'
-          airflow connections add 'aws_custom' --conn-json '{"conn_type": "aws", "login":"${{ secrets.AWS_CUSTOM_LOGIN }}", "password":"${{ secrets.AWS_CUSTOM_PASSWORD }}", "extra": {"region_name": "ap-southeast-2"}}'
-          airflow connections add 'openai_conn'  --conn-json '{"conn_type": "http", "password":"${{ secrets.OPENAI_CONN_PASSWORD }}"}'
-          airflow connections add 'slack_conn' --conn-json '{"conn_type": "slack", "password":"${{ secrets.SLACK_CONN_PASSWORD }}"}'
+          docker exec airflow_webserver_1 airflow connections add 'adzuna_conn' --conn-json '{"conn_type": "http", "extra": {"application_id": "${{ secrets.ADZUNA_CONN_APPLICATION_ID }}", "application_password": "${{ secrets.ADZUNA_CONN_APPLICATION_PASSWORD }}"}}'
+          docker exec airflow_webserver_1 airflow connections add 'aws_custom' --conn-json '{"conn_type": "aws", "login":"${{ secrets.AWS_CUSTOM_LOGIN }}", "password":"${{ secrets.AWS_CUSTOM_PASSWORD }}", "extra": {"region_name": "ap-southeast-2"}}'
+          docker exec airflow_webserver_1 airflow connections add 'openai_conn'  --conn-json '{"conn_type": "http", "password":"${{ secrets.OPENAI_CONN_PASSWORD }}"}'
+          docker exec airflow_webserver_1 airflow connections add 'slack_conn' --conn-json '{"conn_type": "slack", "password":"${{ secrets.SLACK_CONN_PASSWORD }}"}'
 
       - name: Run DAG validation and definition tests
         run: |
