@@ -61,7 +61,7 @@ jobs:
         run: |
           HEALTH=""
           while [ "$HEALTH" != "healthy" ]; do
-            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow-webserver-1)
+            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow_webserver_1)
             if [ "$HEALTH" != "healthy" ]; then\
               echo "Waiting for airflow webserver to become healthy..."
               sleep 5
@@ -70,7 +70,7 @@ jobs:
 
       - name: Run DAG validation and definition tests
         run: |
-          docker exec airflow-webserver-1 python3 -m pytest -vv tests/ 
+          docker exec airflow_webserver_1 python3 -m pytest -vv tests/ 
 
       - name: Stop airflow containers
         run: |
