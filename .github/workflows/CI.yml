@@ -106,14 +106,15 @@ jobs:
           if [ "$job_listing_dag_run_status" == "failed" ]; then
             exit 1
           fi
-      - name: Stop airflow containers
-        run: |
-          docker-compose -f "airflow/docker-compose.yml" down
 
       - name: Revoke host machine access to EMR cluster
         run: |
           ip=$(curl ifconfig.me)
           docker exec airflow_webserver_1 sh -c "cd CI && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
+
+      - name: Stop airflow containers
+        run: |
+          docker-compose -f "airflow/docker-compose.yml" down
 
       - name: set Docker directory permission for cache
         run: |
