@@ -19,7 +19,6 @@ env:
   AWS_REGION: "ap-southeast-2"
   EMR_MASTER_SECURITY_GROUP_ID: "sg-0cb660a18340f7dd3"
   ENABLE_REMOTE_LOGGING: "False"
-  ENV: "dev"
   POSTGRES_DB: "airflow"
   POSTGRES_HOST: "postgres"
   POSTGRES_PASSWORD: "airflow"
@@ -27,7 +26,7 @@ env:
   POSTGRES_USER: "airflow"
   GLUE_CATALOG: "glue"
   GLUE_DATABASE: "job"
-  STAGE: "dev"       
+  STAGE: "ci"       
 
 jobs:
   build_test:
