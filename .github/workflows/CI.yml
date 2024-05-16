@@ -1,6 +1,17 @@
 name: CI
 
-on: [pull_request, workflow_dispatch, push]
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'airflow/**'
+  pull_request:
+    branches:
+      - 'main'
+    paths:
+      - 'airflow/**'
+  workflow_dispatch:
 
 env:
   AIRFLOW_BASE_URL: "http://localhost:8080"
@@ -53,12 +64,6 @@ jobs:
         run: |
           sudo chmod -R 777 /var/lib/docker
 
-      - name: Cache image layers
-        uses: actions/cache@v4
-        with:
-          path: /var/lib/docker
-          key: docker-${{ hashFiles('**/Dockerfile') }}-${{ hashFiles('**/*.py') }}-${{ hashFiles('**/*.sql') }}-${{ hashFiles('**/*.cfg') }}
-
       - name: Build image and start airflow containers
         run: |
           docker-compose -f "airflow/docker-compose.yml" up --build -d
@@ -70,7 +75,7 @@ jobs:
             HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow_webserver_1)
             if [ "$HEALTH" != "healthy" ]; then\
               echo "Waiting for airflow webserver to become healthy..."
-              sleep 5
+              sleep 10
             fi
           done
       - name: Set up airflow connections
