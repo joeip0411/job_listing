@@ -108,7 +108,6 @@ COPY airflow/config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 COPY airflow/dags ${AIRFLOW_HOME}/dags
 COPY airflow/tests ${AIRFLOW_HOME}/tests
-COPY airflow/CI ${AIRFLOW_HOME}/CI
 COPY infra ${AIRFLOW_HOME}/infra
 
 ENV PYTHONPATH ${AIRFLOW_HOME}
