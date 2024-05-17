@@ -61,7 +61,7 @@ jobs:
 
       - name: Build image and start airflow containers
         run: |
-          docker-compose -f "airflow/docker-compose.yml" up --build -d
+          docker-compose up --build -d
 
       - name: Wait for airflow webserver to be healthy
         run: |
@@ -122,4 +122,4 @@ jobs:
 
       - name: Stop airflow containers
         run: |
-          docker-compose -f "airflow/docker-compose.yml" down
+          docker-compose down
