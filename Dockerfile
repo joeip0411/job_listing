@@ -94,21 +94,21 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY config/entrypoint.sh /entrypoint.sh
+COPY airflow/config/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
 USER airflow
 
-COPY requirements.txt .
+COPY airflow/requirements.txt .
 RUN pip install --user -r requirements.txt --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.6.3/constraints-3.7.txt
 
-COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY airflow/config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
-COPY dags ${AIRFLOW_HOME}/dags
-COPY tests ${AIRFLOW_HOME}/tests
-# COPY plugins ${AIRFLOW_HOME}/plugins
+COPY airflow/dags ${AIRFLOW_HOME}/dags
+COPY airflow/tests ${AIRFLOW_HOME}/tests
+COPY infra ${AIRFLOW_HOME}/infra
 
 ENV PYTHONPATH ${AIRFLOW_HOME}
 

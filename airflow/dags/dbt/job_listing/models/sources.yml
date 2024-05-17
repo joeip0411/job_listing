@@ -1,5 +1,6 @@
 sources:
   - name: job
+    schema: "{{ env_var('GLUE_DATABASE') }}"
     tables:
       - name: stg__job_listing
       - name: stg__job_description
