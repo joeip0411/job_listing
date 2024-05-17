@@ -9,7 +9,9 @@ if __name__ =="__main__":
     GLUE_DATABASE_STORAGE_LOCATION = os.getenv("GLUE_DATABASE_STORAGE_LOCATION")
     PROD_GLUE_DATABASE = os.getenv("PROD_GLUE_DATABASE")
 
-    wr.catalog.create_database(name=GLUE_DATABASE)
+    wr.catalog.create_database(
+        name=GLUE_DATABASE, 
+        exist_ok=True)
     print(GLUE_DATABASE + " created")
 
     create_db_query = f"""
