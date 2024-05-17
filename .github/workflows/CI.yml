@@ -67,7 +67,7 @@ jobs:
         run: |
           HEALTH=""
           while [ "$HEALTH" != "healthy" ]; do
-            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' airflow_webserver_1)
+            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' job_listing_webserver_1)
             if [ "$HEALTH" != "healthy" ]; then\
               echo "Waiting for airflow webserver to become healthy..."
               sleep 10
@@ -75,33 +75,33 @@ jobs:
           done
       - name: Set up airflow connections
         run: |
-          docker exec airflow_webserver_1 airflow connections add 'adzuna_conn' --conn-json '{"conn_type": "http", "extra": {"application_id": "${{ secrets.ADZUNA_CONN_APPLICATION_ID }}", "application_password": "${{ secrets.ADZUNA_CONN_APPLICATION_PASSWORD }}"}}'
-          docker exec airflow_webserver_1 airflow connections add 'aws_custom' --conn-json '{"conn_type": "aws", "login":"${{ secrets.AWS_CUSTOM_LOGIN }}", "password":"${{ secrets.AWS_CUSTOM_PASSWORD }}", "extra": {"region_name": "ap-southeast-2"}}'
-          docker exec airflow_webserver_1 airflow connections add 'openai_conn'  --conn-json '{"conn_type": "http", "password":"${{ secrets.OPENAI_CONN_PASSWORD }}"}'
-          docker exec airflow_webserver_1 airflow connections add 'slack_conn' --conn-json '{"conn_type": "slack", "password":"${{ secrets.SLACK_CONN_PASSWORD }}"}'
+          docker exec job_listing_webserver_1 airflow connections add 'adzuna_conn' --conn-json '{"conn_type": "http", "extra": {"application_id": "${{ secrets.ADZUNA_CONN_APPLICATION_ID }}", "application_password": "${{ secrets.ADZUNA_CONN_APPLICATION_PASSWORD }}"}}'
+          docker exec job_listing_webserver_1 airflow connections add 'aws_custom' --conn-json '{"conn_type": "aws", "login":"${{ secrets.AWS_CUSTOM_LOGIN }}", "password":"${{ secrets.AWS_CUSTOM_PASSWORD }}", "extra": {"region_name": "ap-southeast-2"}}'
+          docker exec job_listing_webserver_1 airflow connections add 'openai_conn'  --conn-json '{"conn_type": "http", "password":"${{ secrets.OPENAI_CONN_PASSWORD }}"}'
+          docker exec job_listing_webserver_1 airflow connections add 'slack_conn' --conn-json '{"conn_type": "slack", "password":"${{ secrets.SLACK_CONN_PASSWORD }}"}'
 
       - name: Grant host machine access to EMR cluster
         run: |
           ip=$(curl ifconfig.me)
           echo $ip
-          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
+          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
 
       - name: Set up database
         run: |
-          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m glue_database_set_up"
+          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m glue_database_set_up"
 
       - name: Run DAG validation and definition tests
         run: |
-          docker exec airflow_webserver_1 python3 -m pytest -vv tests/
+          docker exec job_listing_webserver_1 python3 -m pytest -vv tests/
 
       - name: Run job_listing DAG
         run: |
-          docker exec airflow_webserver_1 airflow dags unpause job_listing
+          docker exec job_listing_webserver_1 airflow dags unpause job_listing
           sleep 10
 
           job_listing_dag_run_status='queued'
           while [ "$job_listing_dag_run_status" == "running" -o "$job_listing_dag_run_status" == "queued" ]; do
-            job_listing_dag_run_status=$(docker exec airflow_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'running|queued|success|failed')
+            job_listing_dag_run_status=$(docker exec job_listing_webserver_1 airflow dags list-runs -d job_listing | grep -oE 'running|queued|success|failed')
             echo "running job_listing"
             sleep 60
           done
@@ -114,11 +114,11 @@ jobs:
       - name: Revoke host machine access to EMR cluster
         run: |
           ip=$(curl ifconfig.me)
-          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
+          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
 
       - name: Tear down database
         run: |
-          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m glue_database_tear_down"
+          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m glue_database_tear_down"
 
       - name: Stop airflow containers
         run: |
