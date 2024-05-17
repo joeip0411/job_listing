@@ -50,6 +50,7 @@ jobs:
           echo  POSTGRES_HOST=${{ env.POSTGRES_HOST }} >> .env
           echo  POSTGRES_PORT=${{ env.POSTGRES_PORT }} >> .env
           echo  POSTGRES_USER=${{ env.POSTGRES_USER }} >> .env
+          echo  PROD_GLUE_DATABASE=${{ env.PROD_GLUE_DATABASE }} >> .env
           echo  GLUE_CATALOG=${{ env.GLUE_CATALOG }} >> .env
           echo  GLUE_DATABASE=${{ env.GLUE_DATABASE }} >> .env
           echo  STAGE=${{ env.STAGE }} >> .env
