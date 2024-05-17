@@ -3,12 +3,12 @@ name: CI
 on:
   push:
     branches:
-      - 'main'
+      - main
     paths:
       - 'airflow/**'
   pull_request:
     branches:
-      - 'main'
+      - main
     paths:
       - 'airflow/**'
   workflow_dispatch:
@@ -24,8 +24,9 @@ env:
   POSTGRES_PASSWORD: "airflow"
   POSTGRES_PORT: "5432"
   POSTGRES_USER: "airflow"
+  PROD_GLUE_DATABASE: "job"
   GLUE_CATALOG: "glue"
-  GLUE_DATABASE: "job"
+  GLUE_DATABASE: "job_ci"
   STAGE: "ci"       
 
 jobs:
@@ -45,7 +46,6 @@ jobs:
           echo  AWS_REGION=${{ env.AWS_REGION }} >> airflow/.env
           echo  EMR_MASTER_SECURITY_GROUP_ID${{ env.EMR_MASTER_SECURITY_GROUP_ID }} >> airflow/.env
           echo  ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING }} >> airflow/.env
-          echo  ENV=${{ env.ENV }} >> airflow/.env
           echo  POSTGRES_DB=${{ env.POSTGRES_DB }} >> airflow/.env
           echo  POSTGRES_HOST=${{ env.POSTGRES_HOST }} >> airflow/.env
           echo  POSTGRES_PORT=${{ env.POSTGRES_PORT }} >> airflow/.env
@@ -58,10 +58,6 @@ jobs:
           echo  FERNET_KEY=${{ secrets.FERNET_KEY }} >> airflow/.env
           echo  GLUE_DATABASE_STORAGE_LOCATION=${{ secrets.GLUE_DATABASE_STORAGE_LOCATION }} >> airflow/.env
           cat airflow/.env
-
-      - name: set Docker directory permission for cache
-        run: |
-          sudo chmod -R 777 /var/lib/docker
 
       - name: Build image and start airflow containers
         run: |
@@ -88,7 +84,11 @@ jobs:
         run: |
           ip=$(curl ifconfig.me)
           echo $ip
-          docker exec airflow_webserver_1 sh -c "cd CI && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
+          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
+
+      - name: Set up database
+        run: |
+          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m glue_database_set_up"
 
       - name: Run DAG validation and definition tests
         run: |
@@ -114,12 +114,12 @@ jobs:
       - name: Revoke host machine access to EMR cluster
         run: |
           ip=$(curl ifconfig.me)
-          docker exec airflow_webserver_1 sh -c "cd CI && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
+          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
+
+      - name: Tear down database
+        run: |
+          docker exec airflow_webserver_1 sh -c "cd infra && python3 -m glue_database_tear_down"
 
       - name: Stop airflow containers
         run: |
           docker-compose -f "airflow/docker-compose.yml" down
-
-      - name: set Docker directory permission for cache
-        run: |
-          sudo chmod -R 777 /var/lib/docker

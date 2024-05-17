@@ -9,6 +9,7 @@ from pyspark import SparkConf
 GLUE_CATALOG = os.getenv('GLUE_CATALOG')
 GLUE_DATABASE = os.getenv('GLUE_DATABASE')
 GLUE_DATABASE_STORAGE_LOCATION = os.getenv('GLUE_DATABASE_STORAGE_LOCATION')
+STAGE = os.getenv('STAGE')
 
 SPARK_CONF=(
     SparkConf()\
@@ -99,15 +100,21 @@ EMR_JOB_FLOW_OVERRIDES = {
 
 DBT_PROJECT_NAME = "job_listing"
 DBT_ROOT_PATH = Path(__file__).parent.parent.parent / "dbt"
-DBT_PROJECT_CONFIG = ProjectConfig(dbt_project_path= DBT_ROOT_PATH / DBT_PROJECT_NAME)
+DBT_PROJECT_CONFIG = ProjectConfig(
+    dbt_project_path= DBT_ROOT_PATH / DBT_PROJECT_NAME,
+    env_vars={
+        "GLUE_DATABASE":GLUE_DATABASE,
+        })
 DBT_PROFILE_CONFIG = ProfileConfig(
     profile_name="default",
-    target_name=os.getenv('ENV'),
+    target_name=os.getenv('STAGE'),
     profile_mapping=SparkThriftProfileMapping(
         conn_id="dbt_conn",
-        profile_args={"user": "hadoop",
-                        "schema": GLUE_DATABASE,
-                        "threads": 4},
+        profile_args={
+            "user": "hadoop",
+            "schema": GLUE_DATABASE,
+            "threads": 4,
+            },
     ),
 )
 DBT_EXECUTION_CONFIG=ExecutionConfig(

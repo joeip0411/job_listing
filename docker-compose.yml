@@ -25,8 +25,8 @@ services:
       - postgres
     build: .
     volumes:
-        - ./dags:/usr/local/airflow/dags
-        - ./tests:/usr/local/airflow/tests
+        - ./airflow/dags:/usr/local/airflow/dags
+        - ./airflow/tests:/usr/local/airflow/tests
     ports:
         - "8080:8080"
     command: webserver
@@ -44,8 +44,8 @@ services:
     depends_on:
       - webserver
     volumes:
-      - ./dags:/usr/local/airflow/dags
-      - ./tests:/usr/local/airflow/tests
+      - ./airflow/dags:/usr/local/airflow/dags
+      - ./airflow/tests:/usr/local/airflow/tests
     command: scheduler
 
 volumes:
