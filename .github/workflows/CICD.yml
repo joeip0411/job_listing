@@ -9,24 +9,23 @@ on:
       - '.github/workflows/**'
   workflow_dispatch:
 
-env:
-  AIRFLOW_BASE_URL: "http://localhost:8080"
-  AWS_DEFAULT_REGION: "ap-southeast-2"
-  AWS_REGION: "ap-southeast-2"
-  EMR_MASTER_SECURITY_GROUP_ID: "sg-0cb660a18340f7dd3"
-  ENABLE_REMOTE_LOGGING: "False"
-  POSTGRES_DB: "airflow"
-  POSTGRES_HOST: "postgres"
-  POSTGRES_PASSWORD: "airflow"
-  POSTGRES_PORT: "5432"
-  POSTGRES_USER: "airflow"
-  PROD_GLUE_DATABASE: "job"
-  GLUE_CATALOG: "glue"
-  GLUE_DATABASE: "job_ci"
-  STAGE: "ci"       
-
 jobs:
   build_test:
+    env:
+      AIRFLOW_BASE_URL: "http://localhost:8080"
+      AWS_DEFAULT_REGION: "ap-southeast-2"
+      AWS_REGION: "ap-southeast-2"
+      EMR_MASTER_SECURITY_GROUP_ID: "sg-0cb660a18340f7dd3"
+      ENABLE_REMOTE_LOGGING: "False"
+      POSTGRES_DB: "airflow"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "airflow"
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "airflow"
+      PROD_GLUE_DATABASE: "job"
+      GLUE_CATALOG: "glue"
+      GLUE_DATABASE: "job_ci"
+      STAGE: "ci"   
     environment: dev
     name: Build and test image
     runs-on: ubuntu-latest

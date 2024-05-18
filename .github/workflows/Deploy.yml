@@ -1,0 +1,97 @@
+name: Deploy
+
+on: [push, workflow_dispatch]
+
+jobs:
+  deploy:
+    environment: prod
+    name: Deploy to ECR and ECS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: airflow
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition airflow_job_listing --query taskDefinition > task-definition.json
+    
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: render-airflow-webserver
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: airflow-webserver
+          image: ${{ steps.build-image.outputs.image }}
+          environment-variables: |
+            AIRFLOW_BASE_URL=${{ env.AIRFLOW_BASE_URL }}
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }}
+            AWS_REGION=${{ env.AWS_REGION }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING}}
+            FERNET_KEY=${{ secrets.FERNET_KEY }}
+            GLUE_CATALOG=${{ env.GLUE_CATALOG}}
+            GLUE_DATABASE=${{ env.GLUE_DATABASE}}
+            GLUE_DATABASE_STORAGE_LOCATION=${{ env.GLUE_DATABASE_STORAGE_LOCATION}}
+            POSTGRES_DB=${{ env.POSTGRES_DB}}
+            POSTGRES_HOST=${{ env.POSTGRES_HOST}}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD}}
+            POSTGRES_PORT=${{ env.POSTGRES_PORT}}
+            POSTGRES_USER=${{ env.POSTGRES_USER}}
+            STAGE=${{ env.STAGE}}
+
+      - name: Modify Amazon ECS task definition with airflow-scheduler container
+        id: render-airflow-scheduler
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-airflow-webserver.outputs.task-definition }}
+          container-name: airflow-scheduler
+          image: ${{ steps.build-image.outputs.image }}
+          environment-variables: |
+            AIRFLOW_BASE_URL=${{ env.AIRFLOW_BASE_URL }}
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }}
+            AWS_REGION=${{ env.AWS_REGION }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING}}
+            FERNET_KEY=${{ secrets.FERNET_KEY }}
+            GLUE_CATALOG=${{ env.GLUE_CATALOG}}
+            GLUE_DATABASE=${{ env.GLUE_DATABASE}}
+            GLUE_DATABASE_STORAGE_LOCATION=${{ env.GLUE_DATABASE_STORAGE_LOCATION}}
+            POSTGRES_DB=${{ env.POSTGRES_DB}}
+            POSTGRES_HOST=${{ env.POSTGRES_HOST}}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD}}
+            POSTGRES_PORT=${{ env.POSTGRES_PORT}}
+            POSTGRES_USER=${{ env.POSTGRES_USER}}
+            STAGE=${{ env.STAGE}}
+
+      - name: Deploy ECS task definition to ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-airflow-scheduler.outputs.task-definition }}
+          service: airflow-job-listing
+          cluster: ecs_cluster
+          wait-for-service-stability: true
