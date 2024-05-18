@@ -17,7 +17,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
 
       - name: Login to AWS ECR
         id: login-ecr
@@ -46,22 +46,22 @@ jobs:
           container-name: airflow-webserver
           image: ${{ steps.build-image.outputs.image }}
           environment-variables: |
-            AIRFLOW_BASE_URL=${{ env.AIRFLOW_BASE_URL }}
+            AIRFLOW_BASE_URL=${{ vars.AIRFLOW_BASE_URL }}
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }}
-            AWS_REGION=${{ env.AWS_REGION }}
+            AWS_DEFAULT_REGION=${{ vars.AWS_DEFAULT_REGION }}
+            AWS_REGION=${{ vars.AWS_REGION }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING}}
+            ENABLE_REMOTE_LOGGING=${{ vars.ENABLE_REMOTE_LOGGING}}
             FERNET_KEY=${{ secrets.FERNET_KEY }}
-            GLUE_CATALOG=${{ env.GLUE_CATALOG}}
-            GLUE_DATABASE=${{ env.GLUE_DATABASE}}
-            GLUE_DATABASE_STORAGE_LOCATION=${{ env.GLUE_DATABASE_STORAGE_LOCATION}}
-            POSTGRES_DB=${{ env.POSTGRES_DB}}
-            POSTGRES_HOST=${{ env.POSTGRES_HOST}}
+            GLUE_CATALOG=${{ vars.GLUE_CATALOG}}
+            GLUE_DATABASE=${{ vars.GLUE_DATABASE}}
+            GLUE_DATABASE_STORAGE_LOCATION=${{ vars.GLUE_DATABASE_STORAGE_LOCATION}}
+            POSTGRES_DB=${{ vars.POSTGRES_DB}}
+            POSTGRES_HOST=${{ vars.POSTGRES_HOST}}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD}}
-            POSTGRES_PORT=${{ env.POSTGRES_PORT}}
-            POSTGRES_USER=${{ env.POSTGRES_USER}}
-            STAGE=${{ env.STAGE}}
+            POSTGRES_PORT=${{ vars.POSTGRES_PORT}}
+            POSTGRES_USER=${{ vars.POSTGRES_USER}}
+            STAGE=${{ vars.STAGE}}
 
       - name: Modify Amazon ECS task definition with airflow-scheduler container
         id: render-airflow-scheduler
@@ -71,22 +71,22 @@ jobs:
           container-name: airflow-scheduler
           image: ${{ steps.build-image.outputs.image }}
           environment-variables: |
-            AIRFLOW_BASE_URL=${{ env.AIRFLOW_BASE_URL }}
+            AIRFLOW_BASE_URL=${{ vars.AIRFLOW_BASE_URL }}
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }}
-            AWS_REGION=${{ env.AWS_REGION }}
+            AWS_DEFAULT_REGION=${{ vars.AWS_DEFAULT_REGION }}
+            AWS_REGION=${{ vars.AWS_REGION }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING}}
+            ENABLE_REMOTE_LOGGING=${{ vars.ENABLE_REMOTE_LOGGING}}
             FERNET_KEY=${{ secrets.FERNET_KEY }}
-            GLUE_CATALOG=${{ env.GLUE_CATALOG}}
-            GLUE_DATABASE=${{ env.GLUE_DATABASE}}
-            GLUE_DATABASE_STORAGE_LOCATION=${{ env.GLUE_DATABASE_STORAGE_LOCATION}}
-            POSTGRES_DB=${{ env.POSTGRES_DB}}
-            POSTGRES_HOST=${{ env.POSTGRES_HOST}}
+            GLUE_CATALOG=${{ vars.GLUE_CATALOG}}
+            GLUE_DATABASE=${{ vars.GLUE_DATABASE}}
+            GLUE_DATABASE_STORAGE_LOCATION=${{ vars.GLUE_DATABASE_STORAGE_LOCATION}}
+            POSTGRES_DB=${{ vars.POSTGRES_DB}}
+            POSTGRES_HOST=${{ vars.POSTGRES_HOST}}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD}}
-            POSTGRES_PORT=${{ env.POSTGRES_PORT}}
-            POSTGRES_USER=${{ env.POSTGRES_USER}}
-            STAGE=${{ env.STAGE}}
+            POSTGRES_PORT=${{ vars.POSTGRES_PORT}}
+            POSTGRES_USER=${{ vars.POSTGRES_USER}}
+            STAGE=${{ vars.STAGE}}
 
       - name: Deploy ECS task definition to ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
