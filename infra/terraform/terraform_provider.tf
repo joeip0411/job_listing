@@ -16,7 +16,7 @@ provider "aws" {
   region = "ap-southeast-2"
   default_tags {
     tags = {
-      env = "CI"
+      env = "prod"
       project = "job_listing"
     }
   }
