@@ -1,3 +1,17 @@
+# provider
+variable "storage_backend_bucket" {
+  type = string
+}
+variable "storage_backend_key" {
+  type = string
+}
+variable "aws_region" {
+  type = string
+}
+variable "env" {
+  type = string
+}
+
 # RDS (airflow metastore)
 variable "rds_allocated_storage" {
   type        = number

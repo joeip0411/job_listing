@@ -6,17 +6,17 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "joeip-data-engineering-job-listing-terraform"
-    key = "terraform"
-    region = "ap-southeast-2"
+    bucket = var.storage_backend_bucket
+    key = var.storage_backend_key
+    region = var.aws_region
   }
 }
 
 provider "aws" {
-  region = "ap-southeast-2"
+  region = var.aws_region
   default_tags {
     tags = {
-      env = "prod"
+      env = var.env
       project = "job_listing"
     }
   }
