@@ -6,9 +6,9 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = var.storage_backend_bucket
-    key = var.storage_backend_key
-    region = var.aws_region
+    bucket = "joeip-data-engineering-job-listing-terraform"
+    key = "terraform"
+    region = "ap-southeast-2"
   }
 }
 

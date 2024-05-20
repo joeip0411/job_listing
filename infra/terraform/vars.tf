@@ -1,10 +1,4 @@
 # provider
-variable "storage_backend_bucket" {
-  type = string
-}
-variable "storage_backend_key" {
-  type = string
-}
 variable "aws_region" {
   type = string
 }

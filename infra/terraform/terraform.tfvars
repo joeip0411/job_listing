@@ -1,6 +1,4 @@
 # provider
-storage_backend_bucket="joeip-data-engineering-job-listing-terraform"
-storage_backend_key="terraform"
 aws_region="ap-southeast-2"
 env = "prod"
 
