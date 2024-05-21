@@ -48,3 +48,8 @@ variable "emr_master_security_group" {
 variable "emr_slave_security_group" {
   type = string
 }
+
+# ECR
+variable "repo_name" {
+  type = string
+}
