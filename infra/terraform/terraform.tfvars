@@ -20,3 +20,10 @@ my_home_ip = "49.199.152.109/32"
 
 # ECR
 repo_name = "airflow"
+
+# S3
+datalake_storage_bucket = "joeip-data-engineering-iceberg-test"
+
+# Glue
+aws_account_id = "654654412098"
+glue_database_name = "job"

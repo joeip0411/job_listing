@@ -53,3 +53,16 @@ variable "emr_slave_security_group" {
 variable "repo_name" {
   type = string
 }
+
+#S3
+variable "datalake_storage_bucket"{
+  type = string
+}
+
+#Glue
+variable "aws_account_id" {
+  type = string
+}
+variable "glue_database_name" {
+  type = string
+}
