@@ -5,11 +5,6 @@ resource "aws_security_group" "ecs_task_airflow_job_listing" {
     vpc_id                 = var.default_vpc
 }
 
-import {
-  to = aws_security_group.ecs_task_airflow_job_listing
-  id = "sg-0f31261212c86fbed"
-}
-
 resource "aws_vpc_security_group_ingress_rule" "ingress_from_airflow_metastore_to_ecs" {
 
   description                  = "Postgres DB"
@@ -74,10 +69,6 @@ resource "aws_security_group" "ElasticMapReduce_master" {
   vpc_id = var.default_vpc
 }
 
-import {
-  to = aws_security_group.ElasticMapReduce_master
-  id = "sg-0cb660a18340f7dd3"
-}
 resource "aws_vpc_security_group_ingress_rule" "ingress_from_ecs_to_emr_master" {
   description                  = "ecs-task-airflow-job-listing"
   from_port                    = 10001
@@ -134,3 +125,35 @@ resource "aws_security_group" "ElasticMapReduce_slave" {
   }
   vpc_id = var.default_vpc
 }
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_from_emr_master_to_emr_slave_icmp" {
+  ip_protocol                  = "icmp"
+  referenced_security_group_id = aws_security_group.ElasticMapReduce_master.id
+  security_group_id            = aws_security_group.ElasticMapReduce_slave.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_from_emr_master_to_emr_slave_tcp" {
+  from_port                    = 0
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.ElasticMapReduce_master.id
+  security_group_id            = aws_security_group.ElasticMapReduce_slave.id
+  to_port                      = 65535
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_from_emr_master_to_emr_slave_udp" {
+  from_port                    = 0
+  ip_protocol                  = "udp"
+  referenced_security_group_id = aws_security_group.ElasticMapReduce_master.id
+  security_group_id            = aws_security_group.ElasticMapReduce_slave.id
+  to_port                      = 65535
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_from_emr_slave_to_internet" {
+  cidr_ipv4                    = "0.0.0.0/0"
+  ip_protocol                  = jsonencode(-1)
+  security_group_id            = aws_security_group.ElasticMapReduce_slave.id
+}
+
+# aws_security_group.ecs_task_airflow_job_listing : "sg-0f31261212c86fbed"
+# aws_security_group.ElasticMapReduce_master : "sg-0cb660a18340f7dd3"
+# aws_security_group.ElasticMapReduce_slave : "sg-022b94e344b317380"
