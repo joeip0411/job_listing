@@ -168,6 +168,6 @@ resource "aws_vpc_security_group_egress_rule" "egress_from_emr_slave_to_internet
   security_group_id            = aws_security_group.ElasticMapReduce_slave.id
 }
 
-# aws_security_group.ecs_task_airflow_job_listing : "sg-0f31261212c86fbed"
-# aws_security_group.ElasticMapReduce_master : "sg-0cb660a18340f7dd3"
-# aws_security_group.ElasticMapReduce_slave : "sg-022b94e344b317380"
+output "default_subnet" {
+  value = var.default_subnet
+}

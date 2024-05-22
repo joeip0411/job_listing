@@ -65,9 +65,8 @@ resource "aws_iam_role" "emr_service_role" {
   path                  = "/"
 }
 
-resource "aws_iam_role_policy_attachment" "amazon_emr_role_to_emr_service_role" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceRole"
-  role       = aws_iam_role.emr_service_role.name
+output "emr_service_role" {
+  value = aws_iam_role.emr_service_role.name
 }
 
 resource "aws_iam_role" "emr_ec2_instance_profile" {
@@ -87,6 +86,10 @@ resource "aws_iam_role" "emr_ec2_instance_profile" {
   max_session_duration  = 3600
   name                  = "EMR-EC2-instance-profile"
   path                  = "/"
+}
+
+output "emr_ec2_instance_profile" {
+  value = aws_iam_role.emr_ec2_instance_profile.name
 }
 
 resource "aws_iam_policy" "emr_ec2_instance_profile_policy" {
@@ -122,4 +125,71 @@ resource "aws_iam_policy" "emr_ec2_instance_profile_policy" {
   })
 }
 
+resource "aws_iam_role" "ecs_service_role" {
+  assume_role_policy = jsonencode({
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "ecs.amazonaws.com"
+      }
+    }]
+    Version = "2012-10-17"
+  })
+  description           = "Role to enable Amazon ECS to manage your cluster."
+  force_detach_policies = false
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"]
+  max_session_duration  = 3600
+  name                  = "AWSServiceRoleForECS"
+  path                  = "/aws-service-role/ecs.amazonaws.com/"
+}
 
+output "ecs_service_role_arn" {
+  value = aws_iam_role.ecs_service_role.arn
+}
+
+resource "aws_iam_role" "ecs_task_execution_role" {
+  assume_role_policy = jsonencode({
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      }
+      Sid = ""
+    }]
+    Version = "2008-10-17"
+  })
+  force_detach_policies = false
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+  max_session_duration  = 3600
+  name                  = "ecsTaskExecutionRole"
+  path                  = "/"
+}
+
+output "ecs_task_execution_role_arn" {
+  value = aws_iam_role.ecs_task_execution_role.arn
+}
+
+resource "aws_iam_role" "ecs_task_role" {
+  assume_role_policy = jsonencode({
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      }
+      Sid = ""
+    }]
+    Version = "2012-10-17"
+  })
+  description           = "Allows ECS tasks to call AWS services on your behalf."
+  force_detach_policies = false
+  max_session_duration  = 3600
+  name                  = "ECS-Task-role-airflow-job-listing"
+  path                  = "/"
+}
+
+output "ecs_task_role_arn" {
+  value = aws_iam_role.ecs_task_role.arn
+}

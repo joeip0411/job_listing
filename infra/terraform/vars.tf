@@ -36,6 +36,10 @@ variable "default_security_group" {
   type        = string
   description = "Default VPC security group id"
 }
+
+variable "default_subnet" {
+  type = string
+}
 variable "ecs_task_security_group" {
   type = string
 }
@@ -56,6 +60,9 @@ variable "repo_name" {
 
 #S3
 variable "datalake_storage_bucket"{
+  type = string
+}
+variable "log_bucket" {
   type = string
 }
 
