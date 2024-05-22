@@ -73,3 +73,8 @@ variable "aws_account_id" {
 variable "glue_database_name" {
   type = string
 }
+
+#ECS
+variable "ecs_cluster_name" {
+  type = string
+}

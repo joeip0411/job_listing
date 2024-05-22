@@ -28,3 +28,6 @@ log_bucket = "aws-logs-654654412098-ap-southeast-2"
 # Glue
 aws_account_id = "654654412098"
 glue_database_name = "job"
+
+# ECS
+ecs_cluster_name = "ecs_cluster"
