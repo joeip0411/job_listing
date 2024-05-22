@@ -31,3 +31,5 @@ glue_database_name = "job"
 
 # ECS
 ecs_cluster_name = "ecs_cluster"
+ecs_task_definition_family = "airflow_job_listing"
+ecs_service_name = "airflow_job_listing"

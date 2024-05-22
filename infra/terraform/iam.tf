@@ -125,29 +125,6 @@ resource "aws_iam_policy" "emr_ec2_instance_profile_policy" {
   })
 }
 
-resource "aws_iam_role" "ecs_service_role" {
-  assume_role_policy = jsonencode({
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "ecs.amazonaws.com"
-      }
-    }]
-    Version = "2012-10-17"
-  })
-  description           = "Role to enable Amazon ECS to manage your cluster."
-  force_detach_policies = false
-  managed_policy_arns   = ["arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"]
-  max_session_duration  = 3600
-  name                  = "AWSServiceRoleForECS"
-  path                  = "/aws-service-role/ecs.amazonaws.com/"
-}
-
-output "ecs_service_role_arn" {
-  value = aws_iam_role.ecs_service_role.arn
-}
-
 resource "aws_iam_role" "ecs_task_execution_role" {
   assume_role_policy = jsonencode({
     Statement = [{

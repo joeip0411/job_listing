@@ -78,3 +78,10 @@ variable "glue_database_name" {
 variable "ecs_cluster_name" {
   type = string
 }
+variable "ecs_task_definition_family" {
+  type = string
+}
+
+variable "ecs_service_name" {
+  type = string
+}

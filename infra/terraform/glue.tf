@@ -11,7 +11,7 @@ resource "aws_glue_catalog_database" "job" {
 
 resource "aws_glue_catalog_table" "stg__job_description" {
   catalog_id    = var.aws_account_id
-  database_name = var.glue_database_name
+  database_name = aws_glue_catalog_database.job.name
   name          = "stg__job_description"
   table_type         = "EXTERNAL_TABLE"
   open_table_format_input {
@@ -21,7 +21,7 @@ resource "aws_glue_catalog_table" "stg__job_description" {
   }
   storage_descriptor {
 
-    location = format("s3://%s/%s.db/stg__job_description", aws_s3_bucket.datalake_storage_bucket.id, var.glue_database_name)
+    location = format("s3://%s/%s.db/stg__job_description", aws_s3_bucket.datalake_storage_bucket.id, aws_glue_catalog_database.job.name)
     columns {
       name    = "id"
       parameters = {
@@ -54,7 +54,7 @@ resource "aws_glue_catalog_table" "stg__job_description" {
 
 resource "aws_glue_catalog_table" "stg__job_skills" {
   catalog_id    = var.aws_account_id
-  database_name = var.glue_database_name
+  database_name = aws_glue_catalog_database.job.name
   name          = "stg__job_skills"
   table_type    = "EXTERNAL_TABLE"
   
@@ -65,7 +65,7 @@ resource "aws_glue_catalog_table" "stg__job_skills" {
   }
   storage_descriptor {
 
-    location = format("s3://%s/%s.db/stg__job_skills", aws_s3_bucket.datalake_storage_bucket.id, var.glue_database_name)
+    location = format("s3://%s/%s.db/stg__job_skills", aws_s3_bucket.datalake_storage_bucket.id, aws_glue_catalog_database.job.name)
 
     columns {
       name    = "id"
@@ -99,7 +99,7 @@ resource "aws_glue_catalog_table" "stg__job_skills" {
 
 resource "aws_glue_catalog_table" "stg__job_listing" {
   catalog_id    = var.aws_account_id
-  database_name = var.glue_database_name
+  database_name = aws_glue_catalog_database.job.name
   name          = "stg__job_listing"
   table_type    = "EXTERNAL_TABLE"
 
@@ -110,7 +110,7 @@ resource "aws_glue_catalog_table" "stg__job_listing" {
   }
   storage_descriptor {
 
-    location = format("s3://%s/%s.db/stg__job_listing", aws_s3_bucket.datalake_storage_bucket.id, var.glue_database_name)
+    location = format("s3://%s/%s.db/stg__job_listing", aws_s3_bucket.datalake_storage_bucket.id, aws_glue_catalog_database.job.name)
 
     columns {
       name    = "description"

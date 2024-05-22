@@ -8,3 +8,7 @@ resource "aws_ecr_repository" "airflow" {
     scan_on_push = false
   }
 }
+
+output "aws_ecr_repository_url" {
+  value = aws_ecr_repository.airflow.repository_url
+}
