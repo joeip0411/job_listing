@@ -69,6 +69,10 @@ resource "aws_security_group" "ElasticMapReduce_master" {
   vpc_id = var.default_vpc
 }
 
+output "EMR_MASTER_SECURITY_GROUP_ID" {
+  value = aws_security_group.ElasticMapReduce_master.id
+}
+
 resource "aws_vpc_security_group_ingress_rule" "ingress_from_ecs_to_emr_master" {
   description                  = "ecs-task-airflow-job-listing"
   from_port                    = 10001
