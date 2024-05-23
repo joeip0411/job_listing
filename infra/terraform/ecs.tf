@@ -81,10 +81,6 @@ resource "aws_ecs_task_definition" "airflow_job_listing" {
   }
 }
 
-output "ecs_task_definition_arn" {
-  value = aws_ecs_task_definition.airflow_job_listing.arn
-}
-
 resource "aws_ecs_service" "airflow_job_listing" {
   cluster                            = aws_ecs_cluster.ecs_cluster.arn
   deployment_maximum_percent         = 200

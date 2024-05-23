@@ -30,3 +30,7 @@ resource "aws_db_instance" "airflow-metastore" {
   username                              = var.rds_master_username
   vpc_security_group_ids                = [var.default_security_group]
 }
+
+output "POSTGRES_HOST" {
+  value = aws_db_instance.airflow-metastore.address
+}

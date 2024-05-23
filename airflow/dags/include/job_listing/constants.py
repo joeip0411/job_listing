@@ -6,9 +6,15 @@ from cosmos.constants import TestBehavior
 from cosmos.profiles import SparkThriftProfileMapping
 from pyspark import SparkConf
 
+EC2_SUBNET_ID = os.getenv('EC2_SUBNET_ID')
+EMR_MASTER_SECURITY_GROUP_ID = os.getenv('EMR_MASTER_SECURITY_GROUP_ID')
+EMR_SLAVE_SECURITY_GROUP_ID = os.getenv('EMR_SLAVE_SECURITY_GROUP_ID')
+EMR_SERVICE_ROLE = os.getenv('EMR_SERVICE_ROLE')
+EMR_EC2_INSTANCE_PROFILE = os.getenv('EMR_EC2_INSTANCE_PROFILE')
 GLUE_CATALOG = os.getenv('GLUE_CATALOG')
 GLUE_DATABASE = os.getenv('GLUE_DATABASE')
 GLUE_DATABASE_STORAGE_LOCATION = os.getenv('GLUE_DATABASE_STORAGE_LOCATION')
+LOG_BUCKET = os.getenv('LOG_BUCKET')
 STAGE = os.getenv('STAGE')
 
 SPARK_CONF=(
@@ -24,7 +30,7 @@ SPARK_CONF=(
 
 EMR_JOB_FLOW_OVERRIDES = {
     "Name": "dbt_spark_cluster",
-    "LogUri":"s3n://aws-logs-654654412098-ap-southeast-2/elasticmapreduce/",
+    "LogUri":f"s3n://{LOG_BUCKET}/elasticmapreduce/",
     "ReleaseLabel": "emr-6.15.0",
     "Instances": {
         "InstanceGroups": [
@@ -37,11 +43,11 @@ EMR_JOB_FLOW_OVERRIDES = {
             },
         ],
 
-        "EmrManagedMasterSecurityGroup": "sg-0cb660a18340f7dd3",
-        "EmrManagedSlaveSecurityGroup": "sg-022b94e344b317380",
+        "EmrManagedMasterSecurityGroup": EMR_MASTER_SECURITY_GROUP_ID,
+        "EmrManagedSlaveSecurityGroup": EMR_SLAVE_SECURITY_GROUP_ID,
 
         "KeepJobFlowAliveWhenNoSteps": True,
-        "Ec2SubnetId": "subnet-00db28f8b82b2d34f",
+        "Ec2SubnetId": EC2_SUBNET_ID,
     },
     "Steps": [
         {
@@ -68,8 +74,8 @@ EMR_JOB_FLOW_OVERRIDES = {
             },
         },
 ],
-    "ServiceRole": "EMR-service-role",
-    "JobFlowRole": "EMR-EC2-instance-profile",
+    "ServiceRole": EMR_SERVICE_ROLE,
+    "JobFlowRole": EMR_EC2_INSTANCE_PROFILE,
     "Applications": [
         {"Name": "Hadoop"},
         {"Name": "Hive"},

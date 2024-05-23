@@ -8,10 +8,10 @@ resource "aws_s3_bucket" "log" {
   object_lock_enabled = false
 }
 
-output "datalake_storage_bucket" {
+output "GLUE_DATABASE_STORAGE_LOCATION" {
   value = aws_s3_bucket.datalake_storage_bucket.bucket
 }
 
-output "log_bucket" {
+output "LOG_BUCKET" {
   value = aws_s3_bucket.log.bucket
 }

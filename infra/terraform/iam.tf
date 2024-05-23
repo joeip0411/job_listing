@@ -65,7 +65,7 @@ resource "aws_iam_role" "emr_service_role" {
   path                  = "/"
 }
 
-output "emr_service_role" {
+output "EMR_SERVICE_ROLE" {
   value = aws_iam_role.emr_service_role.name
 }
 
@@ -88,7 +88,7 @@ resource "aws_iam_role" "emr_ec2_instance_profile" {
   path                  = "/"
 }
 
-output "emr_ec2_instance_profile" {
+output "EMR_EC2_INSTANCE_PROFILE" {
   value = aws_iam_role.emr_ec2_instance_profile.name
 }
 
@@ -144,10 +144,6 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   path                  = "/"
 }
 
-output "ecs_task_execution_role_arn" {
-  value = aws_iam_role.ecs_task_execution_role.arn
-}
-
 resource "aws_iam_role" "ecs_task_role" {
   assume_role_policy = jsonencode({
     Statement = [{
@@ -165,8 +161,4 @@ resource "aws_iam_role" "ecs_task_role" {
   max_session_duration  = 3600
   name                  = "ECS-Task-role-airflow-job-listing"
   path                  = "/"
-}
-
-output "ecs_task_role_arn" {
-  value = aws_iam_role.ecs_task_role.arn
 }

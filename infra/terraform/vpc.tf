@@ -5,10 +5,6 @@ resource "aws_security_group" "ecs_task_airflow_job_listing" {
     vpc_id                 = var.default_vpc
 }
 
-output "ecs_task_security_group_id" {
-  value = aws_security_group.ecs_task_airflow_job_listing.id
-}
-
 resource "aws_vpc_security_group_ingress_rule" "ingress_from_airflow_metastore_to_ecs" {
 
   description                  = "Postgres DB"
@@ -73,11 +69,6 @@ resource "aws_security_group" "ElasticMapReduce_master" {
   vpc_id = var.default_vpc
 }
 
-output "elastic_map_reduce_master_security_group_id" {
-  value = aws_security_group.ElasticMapReduce_master.id
-}
-
-
 resource "aws_vpc_security_group_ingress_rule" "ingress_from_ecs_to_emr_master" {
   description                  = "ecs-task-airflow-job-listing"
   from_port                    = 10001
@@ -135,7 +126,7 @@ resource "aws_security_group" "ElasticMapReduce_slave" {
   vpc_id = var.default_vpc
 }
 
-output "elastic_map_reduce_slave_security_group_id" {
+output "EMR_SLAVE_SECURITY_GROUP_ID" {
   value = aws_security_group.ElasticMapReduce_slave.id
 }
 
@@ -168,6 +159,6 @@ resource "aws_vpc_security_group_egress_rule" "egress_from_emr_slave_to_internet
   security_group_id            = aws_security_group.ElasticMapReduce_slave.id
 }
 
-output "default_subnet" {
+output "EC2_SUBNET_ID" {
   value = var.default_subnet
 }
