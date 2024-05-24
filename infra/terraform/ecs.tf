@@ -111,4 +111,6 @@ resource "aws_ecs_service" "airflow_job_listing" {
     security_groups  = [aws_security_group.ecs_task_airflow_job_listing.id]
     subnets          = [var.default_subnet]
   }
+  
+  depends_on = [ aws_db_instance.airflow-metastore ]
 }

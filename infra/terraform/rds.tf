@@ -12,7 +12,7 @@ resource "aws_db_instance" "airflow-metastore" {
   iops                                  = 0
   license_model                         = "postgresql-license"   
   maintenance_window                    = "fri:12:56-fri:13:26"
-  # manage_master_user_password = true
+  manage_master_user_password           = true
   max_allocated_storage                 = 0
   monitoring_interval                   = 0
   multi_az                              = false
