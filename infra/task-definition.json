@@ -1,0 +1,67 @@
+{
+    "family": "airflow_job_listing",
+    "containerDefinitions": [
+        {
+            "name": "airflow-webserver",
+            "image": "654654412098.dkr.ecr.ap-southeast-2.amazonaws.com/airflow:e053fa569d6e0167e2dc19b26f443c0362fce708",
+            "cpu": 1024,
+            "portMappings": [
+                {
+                    "name": "airflow-webserver",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "mountPoints": [],
+            "volumesFrom": [],
+            "startTimeout": 600,
+            "stopTimeout": 120,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/airflow_job_listing",
+                    "awslogs-region": "ap-southeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "systemControls": []
+        },
+        {
+            "name": "airflow-scheduler",
+            "image": "654654412098.dkr.ecr.ap-southeast-2.amazonaws.com/airflow:e053fa569d6e0167e2dc19b26f443c0362fce708",
+            "cpu": 1024,
+            "portMappings": [],
+            "essential": true,
+            "mountPoints": [],
+            "volumesFrom": [],
+            "startTimeout": 600,
+            "stopTimeout": 120,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/airflow_job_listing",
+                    "awslogs-region": "ap-southeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "systemControls": []
+        }
+    ],
+    "taskRoleArn": "arn:aws:iam::654654412098:role/ECS-Task-role-airflow-job-listing",
+    "executionRoleArn": "arn:aws:iam::654654412098:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "2048",
+    "memory": "4096",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}

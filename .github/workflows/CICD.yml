@@ -142,16 +142,12 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Download task definition
-        run: |
-          aws ecs describe-task-definition --task-definition airflow_job_listing --query taskDefinition > task-definition.json
     
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: render-airflow-webserver
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: task-definition.json
+          task-definition: infra/task-definition.json
           container-name: airflow-webserver
           image: ${{ steps.build-image.outputs.image }}
           environment-variables: |
@@ -177,6 +173,7 @@ jobs:
             POSTGRES_PORT=${{ vars.POSTGRES_PORT}}
             POSTGRES_USER=${{ vars.POSTGRES_USER}}
             STAGE=${{ vars.STAGE}}
+          command: webserver
 
       - name: Modify Amazon ECS task definition with airflow-scheduler container
         id: render-airflow-scheduler
@@ -208,11 +205,12 @@ jobs:
             POSTGRES_PORT=${{ vars.POSTGRES_PORT}}
             POSTGRES_USER=${{ vars.POSTGRES_USER}}
             STAGE=${{ vars.STAGE}}
+          command: scheduler
 
       - name: Deploy ECS task definition to ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.render-airflow-scheduler.outputs.task-definition }}
-          service: airflow-job-listing
-          cluster: ecs_cluster
+          service: ${{ vars.ECS_SERVICE_NAME}}
+          cluster: ${{ vars.ECS_CLUSTER_NAME}}
           wait-for-service-stability: true
