@@ -17,7 +17,7 @@ default_vpc = "vpc-08145d8c589b57547"
 ecs_task_security_group = "ecs-task-airflow-job-listing"
 emr_master_security_group = "ElasticMapReduce-master"
 emr_slave_security_group = "ElasticMapReduce-slave"
-my_home_ip = "49.199.152.109/32"
+my_home_ip = "49.184.231.21/32"
 
 # ECR
 repo_name = "airflow"
