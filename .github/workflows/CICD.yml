@@ -11,21 +11,6 @@ on:
 
 jobs:
   build_test:
-    env:
-      AIRFLOW_BASE_URL: "http://localhost:8080"
-      AWS_DEFAULT_REGION: "ap-southeast-2"
-      AWS_REGION: "ap-southeast-2"
-      EMR_MASTER_SECURITY_GROUP_ID: "sg-0cb660a18340f7dd3"
-      ENABLE_REMOTE_LOGGING: "False"
-      POSTGRES_DB: "airflow"
-      POSTGRES_HOST: "postgres"
-      POSTGRES_PASSWORD: "airflow"
-      POSTGRES_PORT: "5432"
-      POSTGRES_USER: "airflow"
-      PROD_GLUE_DATABASE: "job"
-      GLUE_CATALOG: "glue"
-      GLUE_DATABASE: "job_ci"
-      STAGE: "ci"   
     environment: dev
     name: Build and test image
     runs-on: ubuntu-latest
@@ -36,23 +21,29 @@ jobs:
       - name: Set up .env file
         run: |
           touch .env
-          echo  AIRFLOW_BASE_URL=${{ env.AIRFLOW_BASE_URL }} >> .env
-          echo  AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} >> .env
-          echo  AWS_REGION=${{ env.AWS_REGION }} >> .env
-          echo  EMR_MASTER_SECURITY_GROUP_ID${{ env.EMR_MASTER_SECURITY_GROUP_ID }} >> .env
-          echo  ENABLE_REMOTE_LOGGING=${{ env.ENABLE_REMOTE_LOGGING }} >> .env
-          echo  POSTGRES_DB=${{ env.POSTGRES_DB }} >> .env
-          echo  POSTGRES_HOST=${{ env.POSTGRES_HOST }} >> .env
-          echo  POSTGRES_PORT=${{ env.POSTGRES_PORT }} >> .env
-          echo  POSTGRES_USER=${{ env.POSTGRES_USER }} >> .env
-          echo  PROD_GLUE_DATABASE=${{ env.PROD_GLUE_DATABASE }} >> .env
-          echo  GLUE_CATALOG=${{ env.GLUE_CATALOG }} >> .env
-          echo  GLUE_DATABASE=${{ env.GLUE_DATABASE }} >> .env
-          echo  STAGE=${{ env.STAGE }} >> .env
+          echo  AIRFLOW_BASE_URL=${{ vars.AIRFLOW_BASE_URL }} >> .env
           echo  AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} >> .env
+          echo  AWS_DEFAULT_REGION=${{ vars.AWS_DEFAULT_REGION }} >> .env
+          echo  AWS_REGION=${{ vars.AWS_REGION }} >> .env
           echo  AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} >> .env
+          echo  EC2_SUBNET_ID=${{ vars.EC2_SUBNET_ID}} >> .env
+          echo  EMR_EC2_INSTANCE_PROFILE=${{ vars.EMR_EC2_INSTANCE_PROFILE}} >> .env
+          echo  EMR_MASTER_SECURITY_GROUP_ID=${{ vars.EMR_MASTER_SECURITY_GROUP_ID }} >> .env
+          echo  EMR_SERVICE_ROLE=${{ vars.EMR_SERVICE_ROLE }} >> .env
+          echo  EMR_SLAVE_SECURITY_GROUP_ID=${{ vars.EMR_SLAVE_SECURITY_GROUP_ID }} >> .env
+          echo  ENABLE_REMOTE_LOGGING=${{ vars.ENABLE_REMOTE_LOGGING }} >> .env
           echo  FERNET_KEY=${{ secrets.FERNET_KEY }} >> .env
-          echo  GLUE_DATABASE_STORAGE_LOCATION=${{ secrets.GLUE_DATABASE_STORAGE_LOCATION }} >> .env
+          echo  LOG_BUCKET=${{ vars.LOG_BUCKET }} >> .env
+          echo  POSTGRES_DB=${{ vars.POSTGRES_DB }} >> .env
+          echo  POSTGRES_HOST=${{ vars.POSTGRES_HOST }} >> .env
+          echo  POSTGRES_PORT=${{ vars.POSTGRES_PORT }} >> .env
+          echo  POSTGRES_PASSWORD=${{ vars.POSTGRES_PASSWORD }} >> .env
+          echo  POSTGRES_USER=${{ vars.POSTGRES_USER }} >> .env
+          echo  PROD_GLUE_DATABASE=${{ vars.PROD_GLUE_DATABASE }} >> .env
+          echo  GLUE_CATALOG=${{ vars.GLUE_CATALOG }} >> .env
+          echo  GLUE_DATABASE=${{ vars.GLUE_DATABASE }} >> .env
+          echo  GLUE_DATABASE_STORAGE_LOCATION=${{ vars.GLUE_DATABASE_STORAGE_LOCATION }} >> .env
+          echo  STAGE=${{ vars.STAGE }} >> .env
           cat .env
 
       - name: Build image and start airflow containers
@@ -72,7 +63,7 @@ jobs:
       - name: Set up airflow connections
         run: |
           docker exec job_listing_webserver_1 airflow connections add 'adzuna_conn' --conn-json '{"conn_type": "http", "extra": {"application_id": "${{ secrets.ADZUNA_CONN_APPLICATION_ID }}", "application_password": "${{ secrets.ADZUNA_CONN_APPLICATION_PASSWORD }}"}}'
-          docker exec job_listing_webserver_1 airflow connections add 'aws_custom' --conn-json '{"conn_type": "aws", "login":"${{ secrets.AWS_CUSTOM_LOGIN }}", "password":"${{ secrets.AWS_CUSTOM_PASSWORD }}", "extra": {"region_name": "ap-southeast-2"}}'
+          docker exec job_listing_webserver_1 airflow connections add 'aws_custom' --conn-json '{"conn_type": "aws", "login":"${{ secrets.AWS_CUSTOM_LOGIN }}", "password":"${{ secrets.AWS_CUSTOM_PASSWORD }}", "extra": {"region_name": "${{ vars.AWS_DEFAULT_REGION }}"}}'
           docker exec job_listing_webserver_1 airflow connections add 'openai_conn'  --conn-json '{"conn_type": "http", "password":"${{ secrets.OPENAI_CONN_PASSWORD }}"}'
           docker exec job_listing_webserver_1 airflow connections add 'slack_conn' --conn-json '{"conn_type": "slack", "password":"${{ secrets.SLACK_CONN_PASSWORD }}"}'
 
@@ -80,7 +71,7 @@ jobs:
         run: |
           ip=$(curl ifconfig.me)
           echo $ip
-          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
+          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ vars.EMR_MASTER_SECURITY_GROUP_ID }} $ip grant"
 
       - name: Set up database
         run: |
@@ -110,7 +101,7 @@ jobs:
       - name: Revoke host machine access to EMR cluster
         run: |
           ip=$(curl ifconfig.me)
-          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ env.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
+          docker exec job_listing_webserver_1 sh -c "cd infra && python3 -m update_security_group_rules ${{ vars.EMR_MASTER_SECURITY_GROUP_ID }} $ip revoke"
 
       - name: Tear down database
         run: |
@@ -151,16 +142,12 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Download task definition
-        run: |
-          aws ecs describe-task-definition --task-definition airflow_job_listing --query taskDefinition > task-definition.json
     
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: render-airflow-webserver
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: task-definition.json
+          task-definition: infra/task-definition.json
           container-name: airflow-webserver
           image: ${{ steps.build-image.outputs.image }}
           environment-variables: |
@@ -170,7 +157,14 @@ jobs:
             AWS_REGION=${{ vars.AWS_REGION }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             ENABLE_REMOTE_LOGGING=${{ vars.ENABLE_REMOTE_LOGGING}}
+            EC2_SUBNET_ID=${{ vars.EC2_SUBNET_ID}}
+            EMR_EC2_INSTANCE_PROFILE=${{ vars.EMR_EC2_INSTANCE_PROFILE }}
+            EMR_MASTER_SECURITY_GROUP_ID=${{ vars.EMR_MASTER_SECURITY_GROUP_ID}}
+            EMR_SERVICE_ROLE=${{ vars.EMR_SERVICE_ROLE }}
+            EMR_SLAVE_SECURITY_GROUP_ID=${{ vars.EMR_SLAVE_SECURITY_GROUP_ID }}
+            ENABLE_REMOTE_LOGGING=${{ vars.ENABLE_REMOTE_LOGGING }}
             FERNET_KEY=${{ secrets.FERNET_KEY }}
+            LOG_BUCKET=${{ vars.LOG_BUCKET }}
             GLUE_CATALOG=${{ vars.GLUE_CATALOG}}
             GLUE_DATABASE=${{ vars.GLUE_DATABASE}}
             GLUE_DATABASE_STORAGE_LOCATION=${{ vars.GLUE_DATABASE_STORAGE_LOCATION}}
@@ -180,6 +174,7 @@ jobs:
             POSTGRES_PORT=${{ vars.POSTGRES_PORT}}
             POSTGRES_USER=${{ vars.POSTGRES_USER}}
             STAGE=${{ vars.STAGE}}
+          command: webserver
 
       - name: Modify Amazon ECS task definition with airflow-scheduler container
         id: render-airflow-scheduler
@@ -195,7 +190,14 @@ jobs:
             AWS_REGION=${{ vars.AWS_REGION }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             ENABLE_REMOTE_LOGGING=${{ vars.ENABLE_REMOTE_LOGGING}}
+            EC2_SUBNET_ID=${{ vars.EC2_SUBNET_ID}}
+            EMR_EC2_INSTANCE_PROFILE=${{ vars.EMR_EC2_INSTANCE_PROFILE }}
+            EMR_MASTER_SECURITY_GROUP_ID=${{ vars.EMR_MASTER_SECURITY_GROUP_ID}}
+            EMR_SERVICE_ROLE=${{ vars.EMR_SERVICE_ROLE }}
+            EMR_SLAVE_SECURITY_GROUP_ID=${{ vars.EMR_SLAVE_SECURITY_GROUP_ID }}
+            ENABLE_REMOTE_LOGGING=${{ vars.ENABLE_REMOTE_LOGGING }}
             FERNET_KEY=${{ secrets.FERNET_KEY }}
+            LOG_BUCKET=${{ vars.LOG_BUCKET }}
             GLUE_CATALOG=${{ vars.GLUE_CATALOG}}
             GLUE_DATABASE=${{ vars.GLUE_DATABASE}}
             GLUE_DATABASE_STORAGE_LOCATION=${{ vars.GLUE_DATABASE_STORAGE_LOCATION}}
@@ -205,11 +207,12 @@ jobs:
             POSTGRES_PORT=${{ vars.POSTGRES_PORT}}
             POSTGRES_USER=${{ vars.POSTGRES_USER}}
             STAGE=${{ vars.STAGE}}
+          command: scheduler
 
       - name: Deploy ECS task definition to ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.render-airflow-scheduler.outputs.task-definition }}
-          service: airflow-job-listing
-          cluster: ecs_cluster
+          service: ${{ vars.ECS_SERVICE_NAME}}
+          cluster: ${{ vars.ECS_CLUSTER_NAME}}
           wait-for-service-stability: true

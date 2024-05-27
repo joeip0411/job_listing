@@ -13,11 +13,15 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-southeast-2"
+  region = var.aws_region
   default_tags {
     tags = {
-      env = "CI"
+      env = var.env
       project = "job_listing"
     }
   }
+}
+
+output "AWS_REGION" {
+  value = var.aws_region
 }
