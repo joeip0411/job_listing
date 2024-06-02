@@ -1,4 +1,5 @@
 <a name="readme-top"></a>
+
 <br />
 <div align="center">
 
@@ -28,11 +29,7 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -164,27 +161,158 @@ airflow connections add 'slack_conn' \
     }'
 
 ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Deployment
 ### Cloud infrastructure set up
 1. Configure variables in `terraform.tfvars` in Terraform project
 2. Deploy resources to AWS
 ```bash
 cd infra/terraform
+terraform init
 terraform apply
 ```
 ### CI/CD pipeline set up
-
+1. Configure the necessary environment and variables listed in [.github/workflows/CICD.yml](.github/workflows/CICD.yml) in Github Actions.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
 The Power BI report provides an easy way to interact with the data. More complex analysis can be conducted through AWS Athena. Some useful queries are provided below
 ```sql
-select
-  *
-from job_listing
+-- Popularity of skills for jobs with salary > 50th percentile
+WITH cte AS (
+    SELECT
+        job_key,
+        job_description_key,
+        company_key,
+        salary_max,
+        row_number() over (
+            PARTITION by job_key
+            ORDER BY
+                extraction_date_day DESC
+        ) AS row_num
+    FROM
+        fct__job_listing f
+    WHERE
+        salary_max > 0
+),
+salary_pct AS (
+    SELECT
+        c.job_key,
+        jd.title,
+        dc.company,
+        c.salary_max,
+        percent_rank() over (
+            ORDER BY
+                c.salary_max ASC
+        ) AS pct_rank
+    FROM
+        cte c
+        JOIN dim__job_description jd ON c.job_description_key = jd.job_description_key
+        JOIN dim__company dc ON dc.company_key = c.company_key
+    WHERE
+        row_num = 1
+        AND lower(title) LIKE '%data%engineer'
+)
+SELECT
+    ds.skill,
+    count(s.job_key) AS job_required_count
+FROM
+    salary_pct s
+    JOIN brdg__job_skill b ON b.job_key = s.job_key
+    JOIN dim__skill ds ON ds.skill_key = b.skill_key
+WHERE
+    s.pct_rank > 0.5
+GROUP BY
+    ds.skill
+ORDER BY
+    count(s.job_key) DESC
+```
+```sql
+-- Re-advertised jobs
+WITH cte AS (
+    SELECT
+        f.job_key,
+        d.title,
+        f.extraction_date_day,
+        CASE
+            WHEN date_diff(
+                'day',
+                lag(f.extraction_date_day) over (
+                    PARTITION by f.job_key
+                    ORDER BY
+                        f.extraction_date_day ASC
+                ),
+                f.extraction_date_day
+            ) = 1 THEN 0
+            ELSE 1
+        END AS segment_start
+    FROM
+        fct__job_listing f
+        JOIN dim__job_description d ON f.job_description_key = d.job_description_key
+        AND lower (d.title) LIKE '%data%engineer'
+
+),
+segment AS (
+    SELECT
+        job_key,
+        title,
+        extraction_date_day,
+        sum(segment_start) over (
+            PARTITION by job_key
+            ORDER BY
+                extraction_date_day ASC
+        ) AS segment_no
+    FROM
+        cte
+),
+segment_summary AS (
+    SELECT
+        job_key,
+        title,
+        segment_no,
+        min(extraction_date_day) AS start_ad_date,
+        max(extraction_date_day) AS end_ad_date
+    FROM
+        segment
+    GROUP BY
+        job_key,
+        title,
+        segment_no
+)
+SELECT
+    job_key,
+    title,
+    listagg(
+        concat(
+            'start: ',
+            cast(start_ad_date AS varchar),
+            ', end: ',
+            cast(end_ad_date AS varchar)
+        ),
+        '\n'
+    ) within group (
+        ORDER BY
+            end_ad_date DESC
+    ) AS details
+FROM
+    segment_summary
+GROUP BY
+    job_key,
+    title
+HAVING
+    count(*) > 1
+    AND max(end_ad_date) = (
+        SELECT
+            max(extraction_date_day)
+        FROM
+            fct__job_listing
+    )
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
