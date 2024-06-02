@@ -49,13 +49,13 @@ The motivation behind this project stems from the need to empower job seekers wi
 ### Built With
 
 * [![airflow-badge]][airflow-url]
-* [![iceberg-badge]][iceberg-url]
 * [![spark-badge]][spark-url]
 * [![dbt-badge]][dbt-url]
 * [![docker-badge]][docker-url]
 * [![github-action-badge]][github-action-url]
 * [![powerbi-badge]][powerbi-url]
 * [![terraform-badge]][terraform-url]
+* [![iceberg-badge]][iceberg-url]
 
 
 ### Architecture Diagram
